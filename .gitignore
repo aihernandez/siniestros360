@@ -9,7 +9,8 @@ coverage/
 **/.env
 **/.env.*
 !**/.env.example
-**/storage/
+# Archivos subidos al almacenamiento local de DocumentsService
+**/uploads/
 *.usersecrets.json
 # Notas de proceso y tooling, fuera del repositorio
 lessons-learned.md
