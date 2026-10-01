@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Siniestros360 Ajustador</string>
+    <string name="title_activity_main">Siniestros360 Ajustador</string>
+    <string name="package_name">mx.siniestros360.adjuster</string>
+    <string name="custom_url_scheme">mx.siniestros360.adjuster</string>
+</resources>

@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            Siniestros360.CustomerApp/package-lock.json
+            Siniestros360.AdjusterApp/package-lock.json
+            Siniestros360.ControlTower/package-lock.json
+      - run: dotnet restore Siniestros360.slnx
+      - run: dotnet build Siniestros360.slnx -c Release --no-restore
+      - run: dotnet test Siniestros360.Tests.Unit/Siniestros360.Tests.Unit.csproj -c Release --no-build
+      - run: dotnet test Siniestros360.Tests.Integration/Siniestros360.Tests.Integration.csproj -c Release --no-build
+      - run: dotnet test Siniestros360.LocationSimulator.Tests/Siniestros360.LocationSimulator.Tests.csproj -c Release --no-build
+      - name: Verify formatting
+        run: dotnet format Siniestros360.slnx --verify-no-changes --no-restore
+      - run: npm ci && npm run build
+        working-directory: Siniestros360.CustomerApp
+      - run: npm ci && npm run build
+        working-directory: Siniestros360.AdjusterApp
+      - run: npm ci && npm run build
+        working-directory: Siniestros360.ControlTower

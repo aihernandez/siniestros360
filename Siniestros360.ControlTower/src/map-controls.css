@@ -1,0 +1,5 @@
+.map-actions { display: flex; align-items: center; gap: 10px; }
+.map-actions button { border: 1px solid #38516e; border-radius: 6px; background: #10243c; color: #dbeafa; padding: 6px 9px; font-size: 11px; cursor: pointer; }
+.selectable-row { cursor: pointer; }
+.selectable-row:hover { background: #102037; }
+.sla-timer { display: block; margin-top: 5px; color: #f5c25c; font-size: 11px; font-variant-numeric: tabular-nums; }

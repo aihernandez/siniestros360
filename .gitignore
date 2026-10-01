@@ -1,0 +1,24 @@
+**/bin/
+**/obj/
+.vs/
+.vscode/
+*.user
+*.suo
+TestResults/
+coverage/
+**/.env
+**/.env.*
+!**/.env.example
+**/storage/
+*.usersecrets.json
+# Notas de proceso y tooling, fuera del repositorio
+lessons-learned.md
+# Dependencias y builds de las apps web
+**/node_modules/
+**/dist/
+# Respaldos y artefactos locales
+*.tar.gz
+# Documentación de análisis y planificación: se mantiene local
+docs/
+PRODUCT.md
+PARKING_LOT.md

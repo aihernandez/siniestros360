@@ -1,0 +1,5 @@
+.map-marker { display: grid; place-items: center; width: 36px !important; height: 36px !important; margin: -18px 0 0 -18px !important; border: 2px solid #fff; border-radius: 12px; box-shadow: 0 4px 12px #07111f66; color: #fff; font-size: 20px; font-weight: 800; line-height: 1; }
+.marker-claim { background: #c94f44; }
+.marker-adjuster { background: #167f9a; border-radius: 50%; transform: rotate(-18deg); }
+.marker-adjuster-4, .marker-adjuster-5, .marker-adjuster-6 { background: #e19a2d; }
+.marker-ambulance { background: #e8eef5; color: #c83333; border-color: #c83333; border-radius: 9px; font-size: 24px; }
