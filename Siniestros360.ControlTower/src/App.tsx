@@ -31,6 +31,7 @@ const ambulanceMarkerIcon = markerIcon('ambulance')
 const statusCode: Record<string, number> = { Offline: 0, Available: 1, Assigned: 3, EnRoute: 4, Arrived: 5, InService: 6 }
 const adjusterStatus: Record<string, string> = { Offline: 'Fuera de línea', Available: 'Disponible', Assigned: 'Asignado', EnRoute: 'En ruta', Arrived: 'En sitio', InService: 'Atendiendo' }
 const claimStatus: Record<string, string> = { AssignmentPending: 'Despachando', Assigned: 'Asignado', AdjusterArrived: 'Ajustador llegó', InProgress: 'Atendiendo', Closed: 'Cerrado', Cancelled: 'Cancelado' }
+const alertLabel: Record<string, string> = { GpsStale: 'GPS sin actualizar', NoAdjusterAvailable: 'Sin ajustador disponible', SlaWarning: 'Plazo por vencer', SlaBreached: 'Plazo vencido' }
 const adjusterMarkerIcons = new Map<number, ReturnType<typeof markerIcon>>()
 const getAdjusterMarkerIcon = (status: string) => {
   const code = statusCode[status] ?? 0
@@ -64,9 +65,12 @@ export function App() {
   }, [token, logout])
 
   useEffect(() => {
-    const timer = window.setInterval(() => setClock(Date.now()), 60_000)
+    const timer = window.setInterval(() => setClock(Date.now()), 15_000)
     return () => window.clearInterval(timer)
   }, [])
+  // Cada cambio de los siniestros renueva el reloj: con el de la carga inicial, un siniestro recién asignado mostraba
+  // un minuto de más ("16 min" para un plazo de 15).
+  useEffect(() => setClock(Date.now()), [claims])
 
   useEffect(() => {
     if (!token) return
@@ -89,7 +93,8 @@ export function App() {
     connection.onreconnecting(() => setConnected(false))
     connection.onreconnected(() => { setConnected(true); void refresh() })
     connection.onclose(() => setConnected(false))
-    void connection.start().then(() => { if (mounted) setConnected(true) }).catch(() => setConnected(false))
+    // Recarga al conectar: lo ocurrido entre la carga inicial y la conexión no llegaría por SignalR.
+    void connection.start().then(() => { if (mounted) { setConnected(true); void refresh() } }).catch(() => setConnected(false))
     return () => { mounted = false; void connection.stop() }
   }, [token, authorizedFetch])
 
@@ -101,6 +106,7 @@ export function App() {
   const attendedAlerts = useMemo(() => alerts.filter(alert => alert.acknowledgedAt !== null), [alerts])
   const pendingAlerts = useMemo(() => alerts.filter(alert => alert.acknowledgedAt === null), [alerts])
   const adjusterLabel = (claim: ClaimView) => claim.adjusterName ?? claim.adjusterId?.slice(0, 8) ?? ''
+  const folios = useMemo(() => new Map(claims.map(claim => [claim.claimId, claim.folio])), [claims])
 
   const acknowledge = async (alertId: string) => {
     const response = await authorizedFetch(`/api/v1/operations/alerts/${alertId}/acknowledge`, { method: 'POST' })
@@ -153,9 +159,9 @@ export function App() {
         </div>
         {activeTab === 'test' ? <TestClaimForm authorizedFetch={authorizedFetch} /> : <>
         {activeTab === 'operation' ? <div className="tab-content">
-          <section className="sidebar-section"><div className="section-title"><h2>Siniestros activos</h2><span>{activeClaims.length}</span></div>{activeClaims.length === 0 ? <p className="empty-state">Sin siniestros activos.</p> : activeClaims.map(claim => { const due = arrivalDueAt(claim); return <article className="claim-row selectable-row" key={claim.claimId} onClick={() => setMapTarget([claim.latitude, claim.longitude])}><div><strong>{claim.folio}</strong><p>{claim.adjusterId ? `Ajustador ${adjusterLabel(claim)}` : 'Buscando ajustador'}</p>{due ? <small className="sla-timer">⏱ {arrivalCountdown(due, clock)}</small> : null}</div><span className="claim-state">{claimStatus[claim.status] ?? claim.status}</span></article> })}</section>
+          <section className="sidebar-section"><div className="section-title"><h2>Siniestros activos</h2><span>{activeClaims.length}</span></div>{activeClaims.length === 0 ? <p className="empty-state">Sin siniestros activos.</p> : activeClaims.map(claim => { const due = arrivalDueAt(claim); return <article className="claim-row selectable-row" key={claim.claimId} onClick={() => setMapTarget([claim.latitude, claim.longitude])}><div><strong>{claim.folio}</strong><p>{claim.adjusterId ? adjusterLabel(claim) : 'Buscando ajustador'}{claim.requiresAmbulance ? ' · Ambulancia solicitada' : ''}</p>{due ? <small className="sla-timer">⏱ {arrivalCountdown(due, clock)}</small> : null}</div><span className="claim-state">{claimStatus[claim.status] ?? claim.status}</span></article> })}</section>
           <section className="sidebar-section adjusters-section"><div className="section-title"><h2>Ajustadores en operación</h2><span>{visibleAdjusters.length}</span></div>{visibleAdjusters.map(adjuster => <article className="adjuster-row selectable-row" key={adjuster.adjusterId} onClick={() => setMapTarget(adjuster.latitude !== null && adjuster.longitude !== null ? [adjuster.latitude, adjuster.longitude] : null)}><span className={`status-dot status-${statusCode[adjuster.status] ?? 0}`} /><div><strong>{adjuster.displayName}</strong><p>{adjuster.capturedAt ? new Date(adjuster.capturedAt).toLocaleTimeString() : 'Sin señal'}</p></div><span>{adjusterStatus[adjuster.status] ?? adjuster.status}</span></article>)}</section>
-        </div> : <div className="tab-content alerts-content"><section className="sidebar-section"><div className="section-title"><h2>Alertas pendientes</h2><span>{pendingAlerts.length}</span></div>{pendingAlerts.length === 0 ? <p className="empty-state">No hay alertas pendientes.</p> : pendingAlerts.map(alert => <AlertItem key={alert.id} alert={alert} onAcknowledge={acknowledge} />)}</section><section className="sidebar-section history-section"><div className="section-title"><h2>Atendidas</h2><span>{attendedAlerts.length}</span></div>{attendedAlerts.length === 0 ? <p className="empty-state">Las alertas atendidas aparecerán aquí.</p> : attendedAlerts.map(alert => <AlertItem key={alert.id} alert={alert} />)}</section></div>}
+        </div> : <div className="tab-content alerts-content"><section className="sidebar-section"><div className="section-title"><h2>Alertas pendientes</h2><span>{pendingAlerts.length}</span></div>{pendingAlerts.length === 0 ? <p className="empty-state">No hay alertas pendientes.</p> : pendingAlerts.map(alert => <AlertItem key={alert.id} alert={alert} folio={alert.claimId ? folios.get(alert.claimId) : undefined} onAcknowledge={acknowledge} />)}</section><section className="sidebar-section history-section"><div className="section-title"><h2>Atendidas</h2><span>{attendedAlerts.length}</span></div>{attendedAlerts.length === 0 ? <p className="empty-state">Las alertas atendidas aparecerán aquí.</p> : attendedAlerts.map(alert => <AlertItem key={alert.id} alert={alert} folio={alert.claimId ? folios.get(alert.claimId) : undefined} />)}</section></div>}
         </>}
       </aside>
     </section>
@@ -164,8 +170,8 @@ export function App() {
 
 function Metric({ label, value, accent }: { label: string; value: number; accent?: string }) { return <div className={`header-metric ${accent ?? ''}`}><span>{label}</span><strong>{value}</strong></div> }
 
-function AlertItem({ alert, onAcknowledge }: { alert: AlertView; onAcknowledge?: (alertId: string) => void }) {
-  return <article className={alert.acknowledgedAt ? 'alert-row attended' : 'alert-row'}><div><strong>{alert.type}</strong><p>{alert.message}</p><small>{new Date(alert.raisedAt).toLocaleTimeString()}</small></div>{onAcknowledge ? <button onClick={() => void onAcknowledge(alert.id)}>Atender</button> : <span className="attended-label">Atendida</span>}</article>
+function AlertItem({ alert, folio, onAcknowledge }: { alert: AlertView; folio?: string; onAcknowledge?: (alertId: string) => void }) {
+  return <article className={alert.acknowledgedAt ? 'alert-row attended' : 'alert-row'}><div><strong>{alertLabel[alert.type] ?? alert.type}{folio ? ` · ${folio}` : ''}</strong><p>{alert.message}</p><small>{new Date(alert.raisedAt).toLocaleTimeString()}</small></div>{onAcknowledge ? <button onClick={() => void onAcknowledge(alert.id)}>Atender</button> : <span className="attended-label">Atendida</span>}</article>
 }
 
 function TestClaimForm({ authorizedFetch }: { authorizedFetch: (path: string, init?: RequestInit) => Promise<Response> }) {
