@@ -1,0 +1,137 @@
+AdjusterArrived = urn:message:Siniestros360.Contracts.Events:AdjusterArrived
+AdjusterArrived.ClaimId: Guid
+AdjusterArrived.AdjusterId: Guid
+AdjusterArrived.ArrivedAt: DateTimeOffset
+AdjusterAssigned = urn:message:Siniestros360.Contracts.Events:AdjusterAssigned
+AdjusterAssigned.ClaimId: Guid
+AdjusterAssigned.AdjusterId: Guid
+AdjusterAssigned.DistanceKm: Double
+AdjusterAssigned.AssignedAt: DateTimeOffset
+AdjusterAssigned.EstimatedArrivalAt: DateTimeOffset
+AdjusterAssignmentRequested = urn:message:Siniestros360.Contracts.Events:AdjusterAssignmentRequested
+AdjusterAssignmentRequested.ClaimId: Guid
+AdjusterAssignmentRequested.Latitude: Decimal
+AdjusterAssignmentRequested.Longitude: Decimal
+AdjusterAssignmentRequested.RequestedAt: DateTimeOffset
+AdjusterAvailabilityChanged = urn:message:Siniestros360.Contracts.Events:AdjusterAvailabilityChanged
+AdjusterAvailabilityChanged.AdjusterId: Guid
+AdjusterAvailabilityChanged.IsAvailable: Boolean
+AdjusterAvailabilityChanged.ChangedAt: DateTimeOffset
+AdjusterGpsStaleDetected = urn:message:Siniestros360.Contracts.Events:AdjusterGpsStaleDetected
+AdjusterGpsStaleDetected.AdjusterId: Guid
+AdjusterGpsStaleDetected.LastSeenAt: DateTimeOffset
+AdjusterGpsStaleDetected.DetectedAt: DateTimeOffset
+AdjusterLocationUpdated = urn:message:Siniestros360.Contracts.Events:AdjusterLocationUpdated
+AdjusterLocationUpdated.AdjusterId: Guid
+AdjusterLocationUpdated.Latitude: Decimal
+AdjusterLocationUpdated.Longitude: Decimal
+AdjusterLocationUpdated.SpeedKmh: Double?
+AdjusterLocationUpdated.Heading: Double?
+AdjusterLocationUpdated.Sequence: Int64
+AdjusterLocationUpdated.CapturedAt: DateTimeOffset
+AdjusterRegistered = urn:message:Siniestros360.Contracts.Events:AdjusterRegistered
+AdjusterRegistered.AdjusterId: Guid
+AdjusterRegistered.DisplayName: String
+AdjusterRegistered.RegisteredAt: DateTimeOffset
+AdjusterServiceCompleted = urn:message:Siniestros360.Contracts.Events:AdjusterServiceCompleted
+AdjusterServiceCompleted.ClaimId: Guid
+AdjusterServiceCompleted.AdjusterId: Guid
+AdjusterServiceCompleted.CompletedAt: DateTimeOffset
+AdjusterServiceStarted = urn:message:Siniestros360.Contracts.Events:AdjusterServiceStarted
+AdjusterServiceStarted.ClaimId: Guid
+AdjusterServiceStarted.AdjusterId: Guid
+AdjusterServiceStarted.StartedAt: DateTimeOffset
+AdjusterStatusChanged = urn:message:Siniestros360.Contracts.Events:AdjusterStatusChanged
+AdjusterStatusChanged.AdjusterId: Guid
+AdjusterStatusChanged.PreviousStatus: String
+AdjusterStatusChanged.NewStatus: String
+AdjusterStatusChanged.ChangedAt: DateTimeOffset
+ClaimCancelled = urn:message:Siniestros360.Contracts.Events:ClaimCancelled
+ClaimCancelled.ClaimId: Guid
+ClaimCancelled.Reason: String
+ClaimCancelled.CancelledAt: DateTimeOffset
+ClaimClosed = urn:message:Siniestros360.Contracts.Events:ClaimClosed
+ClaimClosed.ClaimId: Guid
+ClaimClosed.ClosedAt: DateTimeOffset
+ClaimEscalated = urn:message:Siniestros360.Contracts.Events:ClaimEscalated
+ClaimEscalated.ClaimId: Guid
+ClaimEscalated.Reason: String
+ClaimEscalated.EscalatedAt: DateTimeOffset
+ClaimReassigned = urn:message:Siniestros360.Contracts.Events:ClaimReassigned
+ClaimReassigned.ClaimId: Guid
+ClaimReassigned.PreviousAdjusterId: Guid
+ClaimReassigned.NewAdjusterId: Guid
+ClaimReassigned.Reason: String
+ClaimReassigned.ReassignedAt: DateTimeOffset
+ClaimReassignmentRequested = urn:message:Siniestros360.Contracts.Events:ClaimReassignmentRequested
+ClaimReassignmentRequested.ClaimId: Guid
+ClaimReassignmentRequested.Reason: String
+ClaimReassignmentRequested.RequestedAt: DateTimeOffset
+ClaimReported = urn:message:Siniestros360.Contracts.Events:ClaimReported
+ClaimReported.ClaimId: Guid
+ClaimReported.InsuredId: String
+ClaimReported.Folio: String
+ClaimReported.PolicyNumber: String
+ClaimReported.VehiclePlate: String
+ClaimReported.IncidentType: String
+ClaimReported.Latitude: Decimal
+ClaimReported.Longitude: Decimal
+ClaimReported.RequiresAmbulance: Boolean
+ClaimReported.ReportedAt: DateTimeOffset
+ClaimStatusChanged = urn:message:Siniestros360.Contracts.Events:ClaimStatusChanged
+ClaimStatusChanged.ClaimId: Guid
+ClaimStatusChanged.PreviousStatus: String
+ClaimStatusChanged.NewStatus: String
+ClaimStatusChanged.Version: Int64
+ClaimStatusChanged.ChangedAt: DateTimeOffset
+DocumentDeleted = urn:message:Siniestros360.Contracts.Events:DocumentDeleted
+DocumentDeleted.DocumentId: Guid
+DocumentDeleted.ClaimId: Guid
+DocumentDeleted.DeletedAt: DateTimeOffset
+DocumentUploaded = urn:message:Siniestros360.Contracts.Events:DocumentUploaded
+DocumentUploaded.DocumentId: Guid
+DocumentUploaded.ClaimId: Guid
+DocumentUploaded.FileName: String
+DocumentUploaded.ContentType: String
+DocumentUploaded.SizeBytes: Int64
+DocumentUploaded.UploadedAt: DateTimeOffset
+NoAdjusterAvailable = urn:message:Siniestros360.Contracts.Events:NoAdjusterAvailable
+NoAdjusterAvailable.ClaimId: Guid
+NoAdjusterAvailable.Reason: String
+NoAdjusterAvailable.OccurredAt: DateTimeOffset
+PolicyValidationCompleted = urn:message:Siniestros360.Contracts.Events:PolicyValidationCompleted
+PolicyValidationCompleted.ClaimId: Guid
+PolicyValidationCompleted.PolicyNumber: String
+PolicyValidationCompleted.CoverageStatus: String
+PolicyValidationCompleted.Reason: String?
+PolicyValidationCompleted.ValidatedAt: DateTimeOffset
+PolicyValidationFailed = urn:message:Siniestros360.Contracts.Events:PolicyValidationFailed
+PolicyValidationFailed.ClaimId: Guid
+PolicyValidationFailed.PolicyNumber: String
+PolicyValidationFailed.ErrorCode: String
+PolicyValidationFailed.ErrorMessage: String
+PolicyValidationFailed.FailedAt: DateTimeOffset
+PolicyValidationRequested = urn:message:Siniestros360.Contracts.Events:PolicyValidationRequested
+PolicyValidationRequested.ClaimId: Guid
+PolicyValidationRequested.PolicyNumber: String
+PolicyValidationRequested.RequestedAt: DateTimeOffset
+PolicyValidationUnavailable = urn:message:Siniestros360.Contracts.Events:PolicyValidationUnavailable
+PolicyValidationUnavailable.ClaimId: Guid
+PolicyValidationUnavailable.PolicyNumber: String
+PolicyValidationUnavailable.Reason: String
+PolicyValidationUnavailable.OccurredAt: DateTimeOffset
+SlaBreached = urn:message:Siniestros360.Contracts.Events:SlaBreached
+SlaBreached.ClaimId: Guid
+SlaBreached.SlaType: String
+SlaBreached.Message: String
+SlaBreached.BreachedAt: DateTimeOffset
+SlaStageStarted = urn:message:Siniestros360.Contracts.Events:SlaStageStarted
+SlaStageStarted.ClaimId: Guid
+SlaStageStarted.Stage: String
+SlaStageStarted.StartedAt: DateTimeOffset
+SlaStageStarted.DueAt: DateTimeOffset
+SlaWarningRaised = urn:message:Siniestros360.Contracts.Events:SlaWarningRaised
+SlaWarningRaised.ClaimId: Guid
+SlaWarningRaised.WarningType: String
+SlaWarningRaised.Message: String
+SlaWarningRaised.RaisedAt: DateTimeOffset
