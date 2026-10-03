@@ -22,9 +22,11 @@ var operations = Service<Projects.Siniestros360_OperationsService>("operations-s
 // La cadena va en user-secrets del AppHost (ConnectionStrings:servicebus) y necesita permiso Manage, porque MassTransit
 // crea su topología al arrancar: un topic por tipo de evento y una cola por servicio.
 var serviceBus = builder.AddConnectionString("servicebus");
+// Prefijo opcional de colas y topics para compartir el namespace sin competir por mensajes (CI usa "ci-").
+var entityPrefix = builder.Configuration["Messaging:EntityPrefix"] ?? "";
 foreach (var service in new[] { claims, adjusters, locations, dispatch, policy, sla, documents, operations })
 {
-    service.WithReference(serviceBus).WaitFor(serviceBus);
+    service.WithReference(serviceBus).WaitFor(serviceBus).WithEnvironment("Messaging__EntityPrefix", entityPrefix);
 }
 
 // Los servicios no tienen launchSettings: sus endpoints se declaran aquí. El gateway usa el puerto fijo 5090
@@ -45,9 +47,10 @@ builder.AddProject<Projects.Siniestros360_LocationSimulator>("location-simulator
     .WaitFor(gateway).WaitFor(adjusters).WaitFor(locations);
 
 // Las apps llaman rutas relativas y el proxy de Vite las reenvía al gateway, así el navegador no necesita CORS.
-builder.AddViteApp("insured-app", "../Siniestros360.CustomerApp").WithEnvironment("SINIESTROS360_GATEWAY_URL", gatewayUrl).WaitFor(gateway);
-builder.AddViteApp("adjuster-app", "../Siniestros360.AdjusterApp").WithEnvironment("SINIESTROS360_GATEWAY_URL", gatewayUrl).WaitFor(gateway);
-builder.AddViteApp("control-tower", "../Siniestros360.ControlTower").WithEnvironment("SINIESTROS360_GATEWAY_URL", gatewayUrl).WaitFor(gateway);
+// Puertos fijos: las pruebas de punta a punta (e2e/) y los marcadores del navegador no dependen de puertos aleatorios.
+builder.AddViteApp("insured-app", "../Siniestros360.CustomerApp").WithEndpoint("http", e => e.Port = 5173).WithEnvironment("SINIESTROS360_GATEWAY_URL", gatewayUrl).WaitFor(gateway);
+builder.AddViteApp("adjuster-app", "../Siniestros360.AdjusterApp").WithEndpoint("http", e => e.Port = 5174).WithEnvironment("SINIESTROS360_GATEWAY_URL", gatewayUrl).WaitFor(gateway);
+builder.AddViteApp("control-tower", "../Siniestros360.ControlTower").WithEndpoint("http", e => e.Port = 5175).WithEnvironment("SINIESTROS360_GATEWAY_URL", gatewayUrl).WaitFor(gateway);
 
 builder.Build().Run();
 

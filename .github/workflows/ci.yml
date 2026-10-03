@@ -3,6 +3,7 @@ name: ci
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build-test:
@@ -22,6 +23,7 @@ jobs:
             Siniestros360.ControlTower/package-lock.json
       - run: dotnet restore Siniestros360.slnx
       - run: dotnet build Siniestros360.slnx -c Release --no-restore
+      # Incluye las pruebas de contrato (ContractTests).
       - run: dotnet test Siniestros360.Tests.Unit/Siniestros360.Tests.Unit.csproj -c Release --no-build
       - run: dotnet test Siniestros360.Tests.Integration/Siniestros360.Tests.Integration.csproj -c Release --no-build
       - run: dotnet test Siniestros360.LocationSimulator.Tests/Siniestros360.LocationSimulator.Tests.csproj -c Release --no-build
@@ -33,3 +35,64 @@ jobs:
         working-directory: Siniestros360.AdjusterApp
       - run: npm ci && npm run build
         working-directory: Siniestros360.ControlTower
+
+  # Recorrido de punta a punta contra Azure Service Bus real: levanta el AppHost completo y corre e2e/ con Playwright.
+  # Necesita el secreto SERVICEBUS_CONNECTION_STRING (permiso Manage); sin él, el job se omite con un aviso.
+  # Usa el prefijo "ci-" para tener colas y topics propios y no competir con el desarrollo local en el mismo namespace.
+  # VERIFICAR(2026-10-03): probado en local con la misma configuración (perfil http, prefijo ci-), nunca en GitHub Actions — se cierra con la primera corrida verde tras configurar el secreto.
+  e2e:
+    needs: build-test
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: e2e-servicebus
+      cancel-in-progress: false
+    env:
+      ConnectionStrings__servicebus: ${{ secrets.SERVICEBUS_CONNECTION_STRING }}
+      Messaging__EntityPrefix: ci-
+      ASPIRE_ALLOW_UNSECURED_TRANSPORT: "true"
+    steps:
+      - id: secret
+        run: |
+          if [ -z "$ConnectionStrings__servicebus" ]; then
+            echo "::notice::Sin SERVICEBUS_CONNECTION_STRING: se omite el recorrido de punta a punta."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.secret.outputs.enabled == 'true'
+      - uses: actions/setup-dotnet@v4
+        if: steps.secret.outputs.enabled == 'true'
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        if: steps.secret.outputs.enabled == 'true'
+        with:
+          node-version: 22
+      - name: Install app and e2e dependencies
+        if: steps.secret.outputs.enabled == 'true'
+        run: |
+          for dir in Siniestros360.CustomerApp Siniestros360.AdjusterApp Siniestros360.ControlTower e2e; do npm ci --prefix "$dir"; done
+          npx --prefix e2e playwright install --with-deps chromium
+      - name: Start AppHost
+        if: steps.secret.outputs.enabled == 'true'
+        run: |
+          dotnet build Siniestros360.AppHost -c Release
+          # Llaves desechables del job: la base y los tokens viven sólo durante esta ejecución.
+          env "Parameters__jwt-signing-key=$(openssl rand -hex 32)" "Parameters__postgres-password=$(openssl rand -hex 16)" \
+            nohup dotnet run --project Siniestros360.AppHost -c Release --no-build --launch-profile http > apphost.log 2>&1 &
+      - name: End-to-end tests
+        if: steps.secret.outputs.enabled == 'true'
+        working-directory: e2e
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.secret.outputs.enabled == 'true'
+        with:
+          name: e2e-results
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+            e2e/screenshots
+            apphost.log
