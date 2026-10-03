@@ -1,3 +1,8 @@
 .assignment-notice { display: grid; gap: 4px; margin: 14px 18px 0; padding: 14px; border-radius: 12px; background: #fff3dc; color: #6e4410; box-shadow: 0 8px 18px #6e441022; }
 .assignment-notice strong { font-size: 13px; }
 .assignment-notice span { font-size: 12px; line-height: 1.4; }
+.logout-button { margin-left: auto; min-height: 40px; padding: 0 14px; border: 1px solid #ffffff40; border-radius: 10px; background: transparent; color: #fff; font: inherit; font-size: 13px; font-weight: 600; }
+.evidence { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 12px; border-radius: 12px; background: #f1f5f9; }
+.evidence span { color: #4b5d71; font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
+.evidence-button { position: relative; flex: none; margin: 0; padding: 10px 12px; border: 1px solid #147288; border-radius: 10px; color: #147288; font-size: 13px; font-weight: 700; cursor: pointer; }
+.evidence-button input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
