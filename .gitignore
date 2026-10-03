@@ -13,7 +13,7 @@ coverage/
 **/uploads/
 *.usersecrets.json
 # Notas de proceso y tooling, fuera del repositorio
-lessons-learned.md
+/lessons-learned.md
 # Dependencias y builds de las apps web
 **/node_modules/
 **/dist/

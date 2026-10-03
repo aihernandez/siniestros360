@@ -57,7 +57,9 @@ dotnet run --project Siniestros360.AppHost
 |---|---|
 | Dashboard de Aspire | https://localhost:17025 |
 | Gateway | http://localhost:5090 |
-| Apps Vite (asegurado, ajustador, torre) | Puerto asignado por Aspire; aparece en el dashboard |
+| App del asegurado | http://localhost:5173 |
+| App del ajustador | http://localhost:5174 |
+| Torre de control | http://localhost:5175 |
 
 Apaga el AppHost cuando no lo uses: el simulador GPS genera alrededor de 1.3 millones de operaciones por día en Service Bus.
 
@@ -78,6 +80,14 @@ dotnet test Siniestros360.LocationSimulator.Tests/Siniestros360.LocationSimulato
 npm run build --prefix Siniestros360.CustomerApp
 npm run build --prefix Siniestros360.AdjusterApp
 npm run build --prefix Siniestros360.ControlTower
+```
+
+Recorrido de punta a punta con Playwright, con el AppHost arriba (detalle en [docs/testing.md](docs/testing.md)):
+
+```powershell
+npm ci --prefix e2e
+$env:PW_CHANNEL = "chrome"   # usa el Chrome instalado; sin esta variable: npx --prefix e2e playwright install chromium
+npm test --prefix e2e
 ```
 
 ## Qué conceptos técnicos demuestra Siniestros360
