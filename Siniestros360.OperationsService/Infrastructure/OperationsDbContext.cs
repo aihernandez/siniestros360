@@ -20,6 +20,7 @@ public sealed class OperationsDbContext(DbContextOptions<OperationsDbContext> op
         builder.Entity<ClaimReadModel>().HasIndex(x => x.Status);
         builder.Entity<ClaimReadModel>().HasIndex(x => x.ReportedAt);
         builder.Entity<AdjusterReadModel>().HasKey(x => x.AdjusterId);
+        builder.Entity<AdjusterReadModel>().Property(x => x.RowVersion).IsRowVersion();
         builder.Entity<OperationalAlert>().HasIndex(x => x.RaisedAt);
         builder.Entity<OperationalAlert>().HasIndex(x => x.AcknowledgedAt);
     }

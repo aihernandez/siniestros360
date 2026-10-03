@@ -31,14 +31,30 @@ public sealed class PolicyValidationConsumer(PolicyDbContext db, IPolicyProvider
             await context.Publish(new PolicyValidationCompleted(e.ClaimId, e.PolicyNumber, result.CoverageStatus, result.Reason, now), ct);
             Validated.Add(1);
         }
+        catch (Exception ex) when (IsPermanent(ex) && !ct.IsCancellationRequested)
+        {
+            // Reintentar no lo arregla: sin este evento el mensaje terminaba en la DLQ y la cobertura quedaba en Pending.
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            var code = ex is HttpRequestException { StatusCode: { } status } ? $"Provider{(int)status}" : "InvalidProviderResponse";
+            db.Attempts.Add(new ExternalValidationAttempt { Id = Guid.NewGuid(), ClaimId = e.ClaimId, Result = "Failed", Error = ex.Message, OccurredAt = now });
+            await context.Publish(new PolicyValidationFailed(e.ClaimId, e.PolicyNumber, code, "El proveedor de pólizas respondió con un error que no se resuelve reintentando.", now), ct);
+        }
         catch (Exception ex) when ((ex is HttpRequestException or TimeoutException or TaskCanceledException or Polly.ExecutionRejectedException) && !ct.IsCancellationRequested)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             db.Attempts.Add(new ExternalValidationAttempt { Id = Guid.NewGuid(), ClaimId = e.ClaimId, Result = "Unavailable", Error = ex.Message, OccurredAt = now });
-            await context.Publish(new PolicyValidationUnavailable(e.ClaimId, e.PolicyNumber, "External policy provider unavailable after retries/circuit breaker.", now), ct);
+            await context.Publish(new PolicyValidationUnavailable(e.ClaimId, e.PolicyNumber, "El proveedor de pólizas no respondió tras los reintentos.", now), ct);
             Unavailable.Add(1);
         }
 
         await db.SaveChangesAsync(ct);
     }
+
+    // Respuesta ilegible o rechazo 4xx del proveedor (salvo 408 y 429, que sí son transitorios).
+    private static bool IsPermanent(Exception exception) => exception switch
+    {
+        System.Text.Json.JsonException or NotSupportedException => true,
+        HttpRequestException { StatusCode: { } status } => (int)status is >= 400 and < 500 and not 408 and not 429,
+        _ => false
+    };
 }

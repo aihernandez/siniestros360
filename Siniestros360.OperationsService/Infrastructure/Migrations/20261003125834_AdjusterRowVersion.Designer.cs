@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Siniestros360.OperationsService.Infrastructure;
@@ -11,9 +12,11 @@ using Siniestros360.OperationsService.Infrastructure;
 namespace Siniestros360.OperationsService.Infrastructure.Migrations
 {
     [DbContext(typeof(OperationsDbContext))]
-    partial class OperationsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261003125834_AdjusterRowVersion")]
+    partial class AdjusterRowVersion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -278,9 +281,6 @@ namespace Siniestros360.OperationsService.Infrastructure.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTimeOffset?>("StatusChangedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("AdjusterId");
 

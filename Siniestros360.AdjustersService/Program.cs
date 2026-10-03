@@ -86,6 +86,8 @@ static async Task SeedDemoAdjusters(WebApplication app)
         db.Adjusters.Add(new Adjuster { Id = id, DisplayName = displayName, IsAvailable = true, Status = AdjusterStatus.Available, UpdatedAt = now, Version = 1 });
         await publish.PublishCorrelated(new AdjusterRegistered(id, displayName, now), correlation, CancellationToken.None);
         await publish.PublishCorrelated(new AdjusterAvailabilityChanged(id, true, now), correlation, CancellationToken.None);
+        // Sin este evento, la torre (cuya vista nace en Offline) mostraba a la unidad fuera de línea hasta su primera asignación.
+        await publish.PublishCorrelated(new AdjusterStatusChanged(id, AdjusterStatus.Offline.ToString(), AdjusterStatus.Available.ToString(), now), correlation, CancellationToken.None);
     }
 
     await db.SaveChangesAsync();

@@ -96,6 +96,21 @@ public sealed class OperationsApiTests(OperationsFactory factory) : IClassFixtur
         claim.GetProperty("requiresAmbulance").GetBoolean().Should().BeTrue();
     }
 
+    // Inicio y cierre seguidos publican InService y Available casi juntos; si llegan al revés, la vista no debe quedar InService.
+    [Fact]
+    public async Task An_older_adjuster_status_does_not_overwrite_a_newer_one()
+    {
+        var adjusterId = Guid.NewGuid();
+        var started = DateTimeOffset.UtcNow;
+        await factory.Deliver(new AdjusterStatusChanged(adjusterId, "InService", "Available", started.AddMilliseconds(50)));
+        await Eventually.Until(() => factory.Query<OperationsDbContext, string?>(db => db.Adjusters.Where(x => x.AdjusterId == adjusterId).Select(x => x.Status).SingleOrDefaultAsync()), x => x == "Available");
+        await factory.Deliver(new AdjusterStatusChanged(adjusterId, "Arrived", "InService", started));
+        await Task.Delay(1000);
+
+        var status = await factory.Query<OperationsDbContext, string>(db => db.Adjusters.Where(x => x.AdjusterId == adjusterId).Select(x => x.Status).SingleAsync());
+        status.Should().Be("Available");
+    }
+
     [Fact]
     public async Task A_restarted_device_with_a_lower_sequence_still_moves_the_adjuster()
     {

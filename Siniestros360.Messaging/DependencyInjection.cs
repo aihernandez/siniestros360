@@ -1,6 +1,7 @@
 using System.Data;
 using Azure.Identity;
 using MassTransit;
+using MassTransit.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,12 +16,15 @@ public static class MessagingDependencyInjection
     // Mensajería del servicio con MassTransit:
     // - Bus outbox de EF Core: lo publicado con IPublishEndpoint se guarda en la transacción del negocio y se envía después del commit.
     // - Consumer outbox + inbox: cada mensaje recibido se procesa una vez y lo que publica viaja en la misma transacción.
-    // - Una sola cola por servicio (endpointName) con todos sus consumidores y sagas; los fallos van a la DLQ nativa.
+    // - Una cola por servicio (endpointName) con sus consumidores de negocio y sagas; los fallos van a la DLQ nativa.
+    // - La telemetría (GPS, 5 mensajes por segundo) va a su propia cola "{endpointName}-telemetry": si compartiera la cola
+    //   del servicio, cada evento del siniestro esperaría detrás de decenas de posiciones.
     // Con ConnectionStrings:servicebus usa Azure Service Bus; sin ella, transporte en memoria (pruebas o ejecución aislada).
     public static IHostApplicationBuilder AddReliableMessaging<TDbContext>(
         this IHostApplicationBuilder builder,
         string endpointName,
-        Action<IBusRegistrationConfigurator>? configure = null)
+        Action<IBusRegistrationConfigurator>? configure = null,
+        params Type[] telemetryConsumers)
         where TDbContext : DbContext, IReliableMessagingDbContext
     {
         builder.Services.AddSingleton(TimeProvider.System);
@@ -41,24 +45,40 @@ public static class MessagingDependencyInjection
                 outbox.DuplicateDetectionWindow = TimeSpan.FromMinutes(30);
             });
             configure?.Invoke(bus);
+            foreach (var consumer in telemetryConsumers) bus.AddConsumer(consumer);
 
+            var telemetryEndpoint = $"{endpointName}-telemetry";
             var connectionString = builder.Configuration.GetConnectionString("servicebus");
             if (string.IsNullOrWhiteSpace(connectionString) && string.IsNullOrWhiteSpace(builder.Configuration["Messaging:ServiceBus:FullyQualifiedNamespace"]))
             {
-                bus.UsingInMemory((context, cfg) => cfg.ReceiveEndpoint(endpointName, endpoint => ConfigureEndpoint<TDbContext>(endpoint, context)));
+                bus.UsingInMemory((context, cfg) =>
+                {
+                    cfg.ReceiveEndpoint(endpointName, endpoint => ConfigureEndpoint<TDbContext>(endpoint, context, Business(context, telemetryConsumers), sagas: true));
+                    if (telemetryConsumers.Length > 0) cfg.ReceiveEndpoint(telemetryEndpoint, endpoint => ConfigureEndpoint<TDbContext>(endpoint, context, telemetryConsumers, sagas: false));
+                });
                 return;
             }
 
+            // Messaging:EntityPrefix aísla a quien comparte el namespace (por ejemplo, CI junto al desarrollo local):
+            // con otro prefijo tiene sus propios topics y colas y no compite por los mensajes.
+            var prefix = builder.Configuration["Messaging:EntityPrefix"] ?? "";
             bus.UsingAzureServiceBus((context, cfg) =>
             {
                 ConfigureHost(cfg, builder.Configuration, connectionString);
-                cfg.ReceiveEndpoint(endpointName, endpoint =>
+                if (prefix.Length > 0) cfg.MessageTopology.SetEntityNameFormatter(new PrefixEntityNameFormatter(cfg.MessageTopology.EntityNameFormatter, prefix));
+                cfg.ReceiveEndpoint(prefix + endpointName, endpoint =>
                 {
-                    // Consumidor sin éxito tras los reintentos o contrato ilegible → DLQ de la cola, no colas _error adicionales.
-                    endpoint.ConfigureDeadLetterQueueErrorTransport();
-                    endpoint.ConfigureDeadLetterQueueDeadLetterTransport();
-                    endpoint.MaxDeliveryCount = 5;
-                    ConfigureEndpoint<TDbContext>(endpoint, context);
+                    ConfigureDeadLetters(endpoint);
+                    ConfigureEndpoint<TDbContext>(endpoint, context, Business(context, telemetryConsumers), sagas: true);
+                });
+                if (telemetryConsumers.Length == 0) return;
+                cfg.ReceiveEndpoint(prefix + telemetryEndpoint, endpoint =>
+                {
+                    ConfigureDeadLetters(endpoint);
+                    // Cada posición actualiza una sola fila y el orden lo resuelve CapturedAt, así que se procesan en paralelo.
+                    endpoint.PrefetchCount = 32;
+                    endpoint.ConcurrentMessageLimit = 16;
+                    ConfigureEndpoint<TDbContext>(endpoint, context, telemetryConsumers, sagas: false);
                 });
             });
         });
@@ -75,8 +95,22 @@ public static class MessagingDependencyInjection
         else await db.Database.EnsureCreatedAsync();
     }
 
+    // Consumidor sin éxito tras los reintentos o contrato ilegible → DLQ de la cola, no colas _error adicionales.
+    private static void ConfigureDeadLetters(IServiceBusReceiveEndpointConfigurator endpoint)
+    {
+        endpoint.ConfigureDeadLetterQueueErrorTransport();
+        endpoint.ConfigureDeadLetterQueueDeadLetterTransport();
+        endpoint.MaxDeliveryCount = 5;
+    }
+
+    // ConfigureConsumers configuraría también los de telemetría en la cola del servicio (ignora ExcludeFromConfigureEndpoints),
+    // así que los consumidores de negocio se listan uno por uno.
+    private static Type[] Business(IBusRegistrationContext context, Type[] telemetryConsumers)
+        => context.GetServices<IConsumerRegistration>().Select(x => x.Type).Except(telemetryConsumers).ToArray();
+
     // Orden obligatorio: reintento por fuera del outbox, para que cada intento empiece con un DbContext y un outbox limpios.
-    private static void ConfigureEndpoint<TDbContext>(IReceiveEndpointConfigurator endpoint, IBusRegistrationContext context)
+    // Las sagas viven en la cola del servicio.
+    private static void ConfigureEndpoint<TDbContext>(IReceiveEndpointConfigurator endpoint, IBusRegistrationContext context, Type[] consumers, bool sagas)
         where TDbContext : DbContext
     {
         endpoint.UseMessageRetry(retry =>
@@ -85,8 +119,8 @@ public static class MessagingDependencyInjection
             retry.Intervals(TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3));
         });
         endpoint.UseEntityFrameworkOutbox<TDbContext>(context);
-        endpoint.ConfigureConsumers(context);
-        endpoint.ConfigureSagas(context);
+        foreach (var consumer in consumers) endpoint.ConfigureConsumer(context, consumer);
+        if (sagas) endpoint.ConfigureSagas(context);
     }
 
     // Conflictos que se resuelven reintentando con un DbContext limpio: concurrencia optimista, llave duplicada

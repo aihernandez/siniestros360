@@ -62,7 +62,7 @@ public sealed class AssignmentStateMachine : MassTransitStateMachine<AssignmentS
                     assigned => assigned.TransitionTo(Assigned),
                     // Sólo se avisa al entrar en Unavailable; los reintentos posteriores no repiten la alerta.
                     unavailable => unavailable
-                        .ThenAsync(context => context.Publish(new NoAdjusterAvailable(context.Saga.CorrelationId, "No available adjuster with recent GPS.", DateTimeOffset.UtcNow)))
+                        .ThenAsync(context => context.Publish(new NoAdjusterAvailable(context.Saga.CorrelationId, "No hay ajustadores disponibles con GPS reciente.", DateTimeOffset.UtcNow)))
                         .TransitionTo(Unavailable)));
 
         During(Unavailable,
@@ -76,7 +76,7 @@ public sealed class AssignmentStateMachine : MassTransitStateMachine<AssignmentS
         // Sólo el SLA de llegada justifica reasignar; con el ajustador en sitio el caso se escala pero no se le quita.
         During(Assigned,
             When(SlaBreached, context => context.Message.SlaType == "WaitingArrival")
-                .ThenAsync(context => Reassign(context, "Arrival SLA breached.")),
+                .ThenAsync(context => Reassign(context, "Venció el plazo de llegada.")),
             When(ManualReassignment)
                 .ThenAsync(context => Reassign(context, context.Message.Reason)),
             When(AdjusterArrived)
@@ -107,7 +107,7 @@ public sealed class AssignmentStateMachine : MassTransitStateMachine<AssignmentS
         if (reservation is null)
         {
             // Sin otro ajustador libre, el actual conserva el servicio y la torre recibe la alerta.
-            await context.Publish(new NoAdjusterAvailable(context.Saga.CorrelationId, $"No other adjuster available to reassign: {reason}", DateTimeOffset.UtcNow));
+            await context.Publish(new NoAdjusterAvailable(context.Saga.CorrelationId, $"No hay otro ajustador disponible para reasignar. {reason}", DateTimeOffset.UtcNow));
             return;
         }
 
