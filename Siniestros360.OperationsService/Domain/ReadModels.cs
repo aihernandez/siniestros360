@@ -46,6 +46,8 @@ public sealed class AdjusterReadModel
     [JsonIgnore] public long Sequence { get; set; }
     public DateTimeOffset? CapturedAt { get; set; }
     public bool GpsStale { get; set; }
+    [JsonIgnore] public DateTimeOffset? StatusChangedAt { get; set; }
+    [JsonIgnore] public uint RowVersion { get; set; }
 }
 
 public sealed class OperationalAlert

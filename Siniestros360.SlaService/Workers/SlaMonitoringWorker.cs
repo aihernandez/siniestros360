@@ -50,7 +50,7 @@ public sealed class SlaMonitoringWorker(IServiceScopeFactory scopes, TimeProvide
             if (dueAt <= now)
             {
                 if (await Exists(db, item, breachType, ct)) continue;
-                var message = $"SLA {stage} exceeded {limit.Value.TotalMinutes:0} minutes.";
+                var message = $"Se venció el plazo de {StageLabel(item.Status)} ({limit.Value.TotalMinutes:0} min).";
                 db.Alerts.Add(new SlaAlert { Id = Guid.NewGuid(), ClaimId = item.ClaimId, AlertType = breachType, StageStartedAt = item.StageStartedAt, Message = message, RaisedAt = now });
                 var correlation = Guid.NewGuid();
                 await publish.PublishCorrelated(new SlaBreached(item.ClaimId, stage, message, now), correlation, ct);
@@ -64,7 +64,7 @@ public sealed class SlaMonitoringWorker(IServiceScopeFactory scopes, TimeProvide
             if (warningAt <= now && !await Exists(db, item, warningType, ct))
             {
                 var remaining = Math.Max(1, Math.Ceiling((dueAt - now).TotalMinutes));
-                var message = $"SLA {stage} expires in {remaining:0} minutes.";
+                var message = $"El plazo de {StageLabel(item.Status)} vence en {remaining:0} min.";
                 db.Alerts.Add(new SlaAlert { Id = Guid.NewGuid(), ClaimId = item.ClaimId, AlertType = warningType, StageStartedAt = item.StageStartedAt, Message = message, RaisedAt = now });
                 await publish.PublishCorrelated(new SlaWarningRaised(item.ClaimId, stage, message, now), Guid.NewGuid(), ct);
             }
@@ -72,6 +72,16 @@ public sealed class SlaMonitoringWorker(IServiceScopeFactory scopes, TimeProvide
 
         if (db.ChangeTracker.HasChanges()) await db.SaveChangesAsync(ct);
     }
+
+    // Los mensajes los lee el operador de la torre; la etapa técnica viaja aparte en el evento.
+    private static string StageLabel(SlaTrackingStatus status) => status switch
+    {
+        SlaTrackingStatus.WaitingAssignment => "asignación",
+        SlaTrackingStatus.WaitingArrival => "llegada del ajustador",
+        SlaTrackingStatus.WaitingService => "inicio de la atención",
+        SlaTrackingStatus.InService => "atención",
+        _ => status.ToString(),
+    };
 
     private static Task<bool> Exists(SlaDbContext db, SlaTracking item, string alertType, CancellationToken ct)
         => db.Alerts.AnyAsync(x => x.ClaimId == item.ClaimId && x.AlertType == alertType && x.StageStartedAt == item.StageStartedAt, ct);

@@ -32,7 +32,6 @@ public sealed class OperationsProjectionConsumer(OperationsDbContext db, IHubCon
     IConsumer<AdjusterRegistered>,
     IConsumer<AdjusterAvailabilityChanged>,
     IConsumer<AdjusterStatusChanged>,
-    IConsumer<AdjusterLocationUpdated>,
     IConsumer<AdjusterGpsStaleDetected>
 {
     public async Task Consume(ConsumeContext<ClaimReported> context)
@@ -154,29 +153,23 @@ public sealed class OperationsProjectionConsumer(OperationsDbContext db, IHubCon
 
     public async Task Consume(ConsumeContext<AdjusterAvailabilityChanged> context)
     {
-        (await Adjuster(context.Message.AdjusterId, context.CancellationToken)).IsAvailable = context.Message.IsAvailable;
+        var adjuster = await Adjuster(context.Message.AdjusterId, context.CancellationToken);
+        adjuster.IsAvailable = context.Message.IsAvailable;
+        // Un ajustador disponible no está fuera de línea, aunque AdjusterStatusChanged no haya llegado (o nunca se publicara).
+        if (adjuster.IsAvailable && adjuster.Status == "Offline") adjuster.Status = "Available";
         await SaveAndNotifyAdjuster(context.Message.AdjusterId, context.CancellationToken);
     }
 
     public async Task Consume(ConsumeContext<AdjusterStatusChanged> context)
     {
         var adjuster = await Adjuster(context.Message.AdjusterId, context.CancellationToken);
+        // Fuera de orden, un cambio más viejo que el último aplicado no retrocede la vista.
+        if (adjuster.StatusChangedAt is { } last && context.Message.ChangedAt < last) { await SaveAndNotifyAdjuster(context.Message.AdjusterId, context.CancellationToken); return; }
         adjuster.Status = context.Message.NewStatus;
+        adjuster.StatusChangedAt = context.Message.ChangedAt;
         adjuster.IsAvailable = context.Message.NewStatus == "Available";
         if (adjuster.IsAvailable) adjuster.ActiveClaimId = null;
         await SaveAndNotifyAdjuster(context.Message.AdjusterId, context.CancellationToken);
-    }
-
-    public async Task Consume(ConsumeContext<AdjusterLocationUpdated> context)
-    {
-        var e = context.Message;
-        var adjuster = await Adjuster(e.AdjusterId, context.CancellationToken);
-        // Hora de captura primero; la secuencia reinicia con el dispositivo y sólo desempata.
-        if (adjuster.CapturedAt is null || e.CapturedAt > adjuster.CapturedAt || (e.CapturedAt == adjuster.CapturedAt && e.Sequence > adjuster.Sequence))
-        {
-            adjuster.Latitude = e.Latitude; adjuster.Longitude = e.Longitude; adjuster.SpeedKmh = e.SpeedKmh; adjuster.Heading = e.Heading; adjuster.Sequence = e.Sequence; adjuster.CapturedAt = e.CapturedAt; adjuster.GpsStale = false;
-        }
-        await SaveAndNotifyAdjuster(e.AdjusterId, context.CancellationToken);
     }
 
     public async Task Consume(ConsumeContext<AdjusterGpsStaleDetected> context)
@@ -184,7 +177,7 @@ public sealed class OperationsProjectionConsumer(OperationsDbContext db, IHubCon
         var e = context.Message;
         var adjuster = await Adjuster(e.AdjusterId, context.CancellationToken);
         adjuster.GpsStale = true;
-        var alert = NewAlert(context, adjuster.ActiveClaimId, e.AdjusterId, "GpsStale", $"{NameOf(adjuster)} sin señal GPS desde {e.LastSeenAt:HH:mm:ss}.", e.DetectedAt);
+        var alert = NewAlert(context, adjuster.ActiveClaimId, e.AdjusterId, "GpsStale", $"{NameOf(adjuster)} sin señal GPS desde las {TimeZoneInfo.ConvertTime(e.LastSeenAt, Operation):HH:mm}.", e.DetectedAt);
         await db.SaveChangesAsync(context.CancellationToken);
         await NotifyAdjuster(e.AdjusterId, context.CancellationToken);
         await hub.Clients.Group(OperationsHub.TowerGroup).SendAsync("alertRaised", alert, context.CancellationToken);
@@ -237,6 +230,9 @@ public sealed class OperationsProjectionConsumer(OperationsDbContext db, IHubCon
     {
         claim.CoverageStatus = status; claim.CoverageReason = reason;
     }
+
+    // La operación es en Nuevo León: las horas dentro de un mensaje se escriben en hora local, como las ve la torre.
+    private static readonly TimeZoneInfo Operation = TimeZoneInfo.FindSystemTimeZoneById("America/Monterrey");
 
     private static string NameOf(AdjusterReadModel adjuster) => string.IsNullOrWhiteSpace(adjuster.DisplayName) ? adjuster.AdjusterId.ToString()[..8] : adjuster.DisplayName;
 

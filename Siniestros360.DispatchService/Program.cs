@@ -27,7 +27,7 @@ builder.AddReliableMessaging<DispatchDbContext>("dispatch-service", bus =>
             repository.ExistingDbContext<DispatchDbContext>();
             repository.UsePostgres();
         });
-});
+}, typeof(AdjusterLocationConsumer));
 
 var app = builder.Build();
 app.UseSiniestrosApiDefaults();
@@ -60,7 +60,7 @@ dispatch.MapPost("/{claimId:guid}/reassign", [Idempotent] async (Guid claimId, R
     if (saga is null) return Results.NotFound();
     if (saga.CurrentState != nameof(AssignmentStateMachine.Assigned))
         return Results.Problem(statusCode: StatusCodes.Status409Conflict, title: $"A claim in {saga.CurrentState} cannot be reassigned.");
-    var reason = string.IsNullOrWhiteSpace(request.Reason) ? "Reassigned by control tower." : request.Reason.Trim();
+    var reason = string.IsNullOrWhiteSpace(request.Reason) ? "Reasignado por la torre de control." : request.Reason.Trim();
     await publish.PublishCorrelated(new ManualReassignmentRequested(claimId, reason), Correlation.From(http), ct);
     await db.SaveChangesAsync(ct);
     return Results.Accepted($"/api/v1/dispatch/claims/{claimId}", new { claimId, status = "ReassignmentRequested" });

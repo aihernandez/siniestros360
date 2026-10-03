@@ -9,14 +9,14 @@ namespace Siniestros360.DispatchService.Application;
 // Proyección local de disponibilidad y GPS: Dispatch decide sin consultar las bases de Adjusters ni de Location.
 // Cuando un ajustador queda elegible, pide a las sagas en espera que reintenten la asignación.
 public sealed class AdjusterProjectionConsumer(DispatchDbContext db, AdjusterReservations reservations, IConfiguration configuration, TimeProvider clock) :
+    AdjusterProjection(db, reservations, configuration, clock),
     IConsumer<AdjusterRegistered>,
-    IConsumer<AdjusterAvailabilityChanged>,
-    IConsumer<AdjusterLocationUpdated>
+    IConsumer<AdjusterAvailabilityChanged>
 {
     public async Task Consume(ConsumeContext<AdjusterRegistered> context)
     {
         await Projection(context.Message.AdjusterId, context.CancellationToken);
-        await db.SaveChangesAsync(context.CancellationToken);
+        await Db.SaveChangesAsync(context.CancellationToken);
     }
 
     public async Task Consume(ConsumeContext<AdjusterAvailabilityChanged> context)
@@ -24,9 +24,16 @@ public sealed class AdjusterProjectionConsumer(DispatchDbContext db, AdjusterRes
         var projection = await Projection(context.Message.AdjusterId, context.CancellationToken);
         if (projection.ReservedForClaimId is null) { projection.IsAvailable = context.Message.IsAvailable; projection.Version++; }
         await RetryWaitingClaims(context, projection);
-        await db.SaveChangesAsync(context.CancellationToken);
+        await Db.SaveChangesAsync(context.CancellationToken);
     }
+}
 
+// GPS en la cola de telemetría de Dispatch. Version es token de concurrencia: dos posiciones del mismo ajustador
+// procesadas a la vez chocan, y el reintento descarta la más antigua por CapturedAt.
+public sealed class AdjusterLocationConsumer(DispatchDbContext db, AdjusterReservations reservations, IConfiguration configuration, TimeProvider clock) :
+    AdjusterProjection(db, reservations, configuration, clock),
+    IConsumer<AdjusterLocationUpdated>
+{
     public async Task Consume(ConsumeContext<AdjusterLocationUpdated> context)
     {
         var e = context.Message;
@@ -37,11 +44,16 @@ public sealed class AdjusterProjectionConsumer(DispatchDbContext db, AdjusterRes
             projection.Latitude = e.Latitude; projection.Longitude = e.Longitude; projection.LastLocationAt = e.CapturedAt; projection.LastLocationSequence = e.Sequence; projection.Version++;
         }
         await RetryWaitingClaims(context, projection);
-        await db.SaveChangesAsync(context.CancellationToken);
+        await Db.SaveChangesAsync(context.CancellationToken);
     }
+}
+
+public abstract class AdjusterProjection(DispatchDbContext db, AdjusterReservations reservations, IConfiguration configuration, TimeProvider clock)
+{
+    protected DispatchDbContext Db { get; } = db;
 
     // Sólo un ajustador libre con GPS reciente dispara reintentos; así el GPS de unidades ocupadas no genera tráfico.
-    private async Task RetryWaitingClaims(ConsumeContext context, AdjusterDispatchProjection projection)
+    protected async Task RetryWaitingClaims(ConsumeContext context, AdjusterDispatchProjection projection)
     {
         var freshness = clock.GetUtcNow().AddSeconds(-configuration.GetValue("Dispatch:LocationFreshnessSeconds", 180));
         if (!projection.IsAvailable || projection.ReservedForClaimId is not null || projection.LastLocationAt < freshness) return;
@@ -51,12 +63,12 @@ public sealed class AdjusterProjectionConsumer(DispatchDbContext db, AdjusterRes
         }
     }
 
-    private async Task<AdjusterDispatchProjection> Projection(Guid adjusterId, CancellationToken ct)
+    protected async Task<AdjusterDispatchProjection> Projection(Guid adjusterId, CancellationToken ct)
     {
-        var projection = db.Adjusters.Local.FirstOrDefault(x => x.AdjusterId == adjusterId) ?? await db.Adjusters.SingleOrDefaultAsync(x => x.AdjusterId == adjusterId, ct);
+        var projection = Db.Adjusters.Local.FirstOrDefault(x => x.AdjusterId == adjusterId) ?? await Db.Adjusters.SingleOrDefaultAsync(x => x.AdjusterId == adjusterId, ct);
         if (projection is not null) return projection;
         projection = new AdjusterDispatchProjection { AdjusterId = adjusterId, Version = 1 };
-        db.Adjusters.Add(projection);
+        Db.Adjusters.Add(projection);
         return projection;
     }
 }

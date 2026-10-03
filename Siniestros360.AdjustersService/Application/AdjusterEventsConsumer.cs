@@ -32,13 +32,13 @@ public sealed class AdjusterEventsConsumer(AdjustersDbContext db) :
 
     public async Task Consume(ConsumeContext<AdjusterArrived> context)
     {
-        await Change(context, context.Message.AdjusterId, AdjusterStatus.Arrived, context.Message.ClaimId, context.Message.ArrivedAt);
+        await Advance(context, context.Message.AdjusterId, AdjusterStatus.Arrived, context.Message.ClaimId, context.Message.ArrivedAt);
         await db.SaveChangesAsync(context.CancellationToken);
     }
 
     public async Task Consume(ConsumeContext<AdjusterServiceStarted> context)
     {
-        await Change(context, context.Message.AdjusterId, AdjusterStatus.InService, context.Message.ClaimId, context.Message.StartedAt);
+        await Advance(context, context.Message.AdjusterId, AdjusterStatus.InService, context.Message.ClaimId, context.Message.StartedAt);
         await db.SaveChangesAsync(context.CancellationToken);
     }
 
@@ -63,6 +63,24 @@ public sealed class AdjusterEventsConsumer(AdjustersDbContext db) :
         var previous = adjuster.ChangeStatus(status, claimId, at);
         if (previous is not null) await context.Publish(new AdjusterStatusChanged(adjusterId, previous.Value.ToString(), status.ToString(), at), context.CancellationToken);
     }
+
+    // Llegada e inicio sólo avanzan al ajustador dentro de su siniestro activo. Los eventos pueden llegar fuera de orden:
+    // un AdjusterServiceStarted procesado después del cierre lo dejaba InService, atado a un siniestro ya cerrado.
+    private async Task Advance(ConsumeContext context, Guid adjusterId, AdjusterStatus status, Guid claimId, DateTimeOffset at)
+    {
+        var adjuster = await db.Adjusters.SingleOrDefaultAsync(x => x.Id == adjusterId, context.CancellationToken);
+        if (adjuster is null || adjuster.ActiveClaimId != claimId || Stage(adjuster.Status) >= Stage(status)) return;
+        var previous = adjuster.ChangeStatus(status, claimId, at);
+        if (previous is not null) await context.Publish(new AdjusterStatusChanged(adjusterId, previous.Value.ToString(), status.ToString(), at), context.CancellationToken);
+    }
+
+    private static int Stage(AdjusterStatus status) => status switch
+    {
+        AdjusterStatus.Assigned or AdjusterStatus.EnRoute => 1,
+        AdjusterStatus.Arrived => 2,
+        AdjusterStatus.InService => 3,
+        _ => 0,
+    };
 
     // Sólo libera al ajustador si sigue asignado a ese siniestro; un evento tardío no pisa una asignación más nueva.
     private async Task Release(ConsumeContext context, Guid adjusterId, Guid claimId, DateTimeOffset at)
