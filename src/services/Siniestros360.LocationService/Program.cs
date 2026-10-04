@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using Siniestros360.Contracts.Events;
-using Siniestros360.Contracts.Messaging;
+using Siniestros360.Contracts.Common;
 using Siniestros360.LocationService.Application;
 using Siniestros360.LocationService.Domain;
 using Siniestros360.LocationService.Infrastructure;

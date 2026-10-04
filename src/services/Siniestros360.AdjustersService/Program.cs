@@ -6,7 +6,7 @@ using Siniestros360.AdjustersService.Application;
 using Siniestros360.AdjustersService.Domain;
 using Siniestros360.AdjustersService.Infrastructure;
 using Siniestros360.Contracts.Events;
-using Siniestros360.Contracts.Messaging;
+using Siniestros360.Contracts.Common;
 using Siniestros360.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);

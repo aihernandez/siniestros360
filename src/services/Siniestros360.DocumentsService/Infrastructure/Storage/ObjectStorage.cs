@@ -1,5 +1,5 @@
 using System.Net.Http.Headers;
-namespace Siniestros360.DocumentsService.Storage;
+namespace Siniestros360.DocumentsService.Infrastructure.Storage;
 
 public sealed record ObjectStorageResult(string ObjectName, string? ETag);
 public interface IObjectStorage

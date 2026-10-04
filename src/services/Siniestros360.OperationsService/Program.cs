@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Siniestros360.Contracts.Messaging;
+using Siniestros360.Contracts.Common;
 using Siniestros360.OperationsService.Application;
 using Siniestros360.OperationsService.Hubs;
 using Siniestros360.OperationsService.Infrastructure;

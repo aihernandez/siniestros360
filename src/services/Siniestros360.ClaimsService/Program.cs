@@ -5,7 +5,7 @@ using Siniestros360.ClaimsService.Application;
 using Siniestros360.ClaimsService.Domain;
 using Siniestros360.ClaimsService.Infrastructure;
 using Siniestros360.Contracts.Events;
-using Siniestros360.Contracts.Messaging;
+using Siniestros360.Contracts.Common;
 using Siniestros360.Messaging;
 using Siniestros360.Messaging.Idempotency;
 

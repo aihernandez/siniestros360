@@ -4,11 +4,11 @@ using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Siniestros360.Contracts.Events;
-using Siniestros360.Contracts.Messaging;
+using Siniestros360.Contracts.Common;
 using Siniestros360.DocumentsService.Application;
 using Siniestros360.DocumentsService.Domain;
 using Siniestros360.DocumentsService.Infrastructure;
-using Siniestros360.DocumentsService.Storage;
+using Siniestros360.DocumentsService.Infrastructure.Storage;
 using Siniestros360.Messaging;
 using Siniestros360.Messaging.Idempotency;
 

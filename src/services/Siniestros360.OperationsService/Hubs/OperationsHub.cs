@@ -2,10 +2,10 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Siniestros360.Contracts.Messaging;
+using Siniestros360.Contracts.Common;
 using Siniestros360.OperationsService.Domain;
 using Siniestros360.OperationsService.Infrastructure;
-using ContractClaimTypes = Siniestros360.Contracts.Messaging.ClaimTypes;
+using ContractClaimTypes = Siniestros360.Contracts.Common.ClaimTypes;
 
 namespace Siniestros360.OperationsService.Hubs;
 
