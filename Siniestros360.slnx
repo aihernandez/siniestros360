@@ -32,6 +32,9 @@
     <Project Path="tests/Siniestros360.LocationSimulator.Tests/Siniestros360.LocationSimulator.Tests.csproj" />
   </Folder>
   <Folder Name="/solution-items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="tests/Directory.Build.props" />
     <File Path="README.md" />
     <File Path=".gitignore" />
     <File Path=".dockerignore" />
