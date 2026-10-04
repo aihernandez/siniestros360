@@ -18,25 +18,24 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: |
-            Siniestros360.CustomerApp/package-lock.json
-            Siniestros360.AdjusterApp/package-lock.json
-            Siniestros360.ControlTower/package-lock.json
+            apps/*/package-lock.json
+            tests/e2e/package-lock.json
       - run: dotnet restore Siniestros360.slnx
       - run: dotnet build Siniestros360.slnx -c Release --no-restore
-      # Incluye las pruebas de contrato (ContractTests).
-      - run: dotnet test Siniestros360.Tests.Unit/Siniestros360.Tests.Unit.csproj -c Release --no-build
-      - run: dotnet test Siniestros360.Tests.Integration/Siniestros360.Tests.Integration.csproj -c Release --no-build
-      - run: dotnet test Siniestros360.LocationSimulator.Tests/Siniestros360.LocationSimulator.Tests.csproj -c Release --no-build
+      - run: dotnet test tests/Siniestros360.Tests.Unit -c Release --no-build
+      - run: dotnet test tests/Siniestros360.Tests.Contracts -c Release --no-build
+      - run: dotnet test tests/Siniestros360.Tests.Integration -c Release --no-build
+      - run: dotnet test tests/Siniestros360.LocationSimulator.Tests -c Release --no-build
       - name: Verify formatting
         run: dotnet format Siniestros360.slnx --verify-no-changes --no-restore
       - run: npm ci && npm run build
-        working-directory: Siniestros360.CustomerApp
+        working-directory: apps/insured-app
       - run: npm ci && npm run build
-        working-directory: Siniestros360.AdjusterApp
+        working-directory: apps/adjuster-app
       - run: npm ci && npm run build
-        working-directory: Siniestros360.ControlTower
+        working-directory: apps/control-tower
 
-  # Recorrido de punta a punta contra Azure Service Bus real: levanta el AppHost completo y corre e2e/ con Playwright.
+  # Recorrido de punta a punta contra Azure Service Bus real: levanta el AppHost completo y corre tests/e2e/ con Playwright.
   # Necesita el secreto SERVICEBUS_CONNECTION_STRING (permiso Manage); sin él, el job se omite con un aviso.
   # Usa el prefijo "ci-" para tener colas y topics propios y no competir con el desarrollo local en el mismo namespace.
   # VERIFICAR(2026-10-03): probado en local con la misma configuración (perfil http, prefijo ci-), nunca en GitHub Actions — se cierra con la primera corrida verde tras configurar el secreto.
@@ -74,25 +73,25 @@ jobs:
       - name: Install app and e2e dependencies
         if: steps.secret.outputs.enabled == 'true'
         run: |
-          for dir in Siniestros360.CustomerApp Siniestros360.AdjusterApp Siniestros360.ControlTower e2e; do npm ci --prefix "$dir"; done
-          npx --prefix e2e playwright install --with-deps chromium
+          for dir in apps/insured-app apps/adjuster-app apps/control-tower tests/e2e; do npm ci --prefix "$dir"; done
+          npx --prefix tests/e2e playwright install --with-deps chromium
       - name: Start AppHost
         if: steps.secret.outputs.enabled == 'true'
         run: |
-          dotnet build Siniestros360.AppHost -c Release
+          dotnet build src/aspire/Siniestros360.AppHost -c Release
           # Llaves desechables del job: la base y los tokens viven sólo durante esta ejecución.
           env "Parameters__jwt-signing-key=$(openssl rand -hex 32)" "Parameters__postgres-password=$(openssl rand -hex 16)" \
-            nohup dotnet run --project Siniestros360.AppHost -c Release --no-build --launch-profile http > apphost.log 2>&1 &
+            nohup dotnet run --project src/aspire/Siniestros360.AppHost -c Release --no-build --launch-profile http > apphost.log 2>&1 &
       - name: End-to-end tests
         if: steps.secret.outputs.enabled == 'true'
-        working-directory: e2e
+        working-directory: tests/e2e
         run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: always() && steps.secret.outputs.enabled == 'true'
         with:
           name: e2e-results
           path: |
-            e2e/playwright-report
-            e2e/test-results
-            e2e/screenshots
+            tests/e2e/playwright-report
+            tests/e2e/test-results
+            tests/e2e/screenshots
             apphost.log

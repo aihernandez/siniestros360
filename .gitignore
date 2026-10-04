@@ -9,6 +9,10 @@ coverage/
 **/.env
 **/.env.*
 !**/.env.example
+# Perfiles que Visual Studio crea al abrir la solución: los puertos y el ambiente de los servicios los define el AppHost,
+# y un perfil con applicationUrl choca con el endpoint "http" que declara.
+src/services/*/Properties/launchSettings.json
+src/gateway/*/Properties/launchSettings.json
 # Archivos subidos al almacenamiento local de DocumentsService
 **/uploads/
 *.usersecrets.json

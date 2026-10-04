@@ -5,3 +5,7 @@
 .git
 .vs
 TestResults
+# Archivos subidos al almacenamiento local de DocumentsService y secretos locales: nunca en una imagen.
+**/uploads
+**/.env
+**/*.user

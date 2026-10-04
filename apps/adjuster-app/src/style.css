@@ -1,0 +1,2 @@
+/* Las dos apps móviles comparten la base visual de la app del asegurado; el build necesita apps/insured-app. */
+@import '../../insured-app/src/style.css';

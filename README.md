@@ -21,6 +21,20 @@ Está construida con .NET 10, Aspire, YARP, PostgreSQL/PostGIS, MassTransit sobr
 
 Cada servicio tiene su propia base de datos y migraciones. Ningún servicio consulta tablas de otro.
 
+## Estructura
+
+| Carpeta | Contenido |
+|---|---|
+| `src/aspire/` | `AppHost` (topología local) y `ServiceDefaults` (telemetría, health checks, resiliencia, seguridad común) |
+| `src/shared/` | `Contracts` (eventos de integración y roles) y `Messaging` (MassTransit, outbox, inbox e idempotencia) |
+| `src/gateway/` | `Gateway` (YARP) |
+| `src/services/` | Los 9 microservicios, cada uno con `Domain/`, `Application/`, `Infrastructure/` y su `Dockerfile` |
+| `src/tools/` | `LocationSimulator` (GPS simulado de los 5 ajustadores) |
+| `tests/` | Unitarias, de contrato, de integración, del simulador y `e2e/` con Playwright |
+| `apps/` | `insured-app`, `adjuster-app` y `control-tower`: React/Vite; las dos primeras se empaquetan con Capacitor |
+
+Cada proyecto .NET vive en una carpeta con su nombre completo (`src/services/Siniestros360.ClaimsService/`). La solución `Siniestros360.slnx` tiene las mismas carpetas. Los Dockerfiles se construyen desde la raíz: `docker build -f src/services/Siniestros360.ClaimsService/Dockerfile .`
+
 ## Requisitos
 
 - .NET 10 SDK.
@@ -41,8 +55,8 @@ $cs = az servicebus namespace authorization-rule keys list -g <grupo> --namespac
 Configura una sola vez los secretos del AppHost (quedan en user-secrets, fuera del repositorio):
 
 ```powershell
-dotnet user-secrets set "Parameters:jwt-signing-key" "<clave-de-al-menos-32-caracteres>" --project Siniestros360.AppHost
-dotnet user-secrets set "ConnectionStrings:servicebus" $cs --project Siniestros360.AppHost
+dotnet user-secrets set "Parameters:jwt-signing-key" "<clave-de-al-menos-32-caracteres>" --project src/aspire/Siniestros360.AppHost
+dotnet user-secrets set "ConnectionStrings:servicebus" $cs --project src/aspire/Siniestros360.AppHost
 ```
 
 Levanta todo:
@@ -50,7 +64,7 @@ Levanta todo:
 ```powershell
 aspire run
 # o bien
-dotnet run --project Siniestros360.AppHost
+dotnet run --project src/aspire/Siniestros360.AppHost
 ```
 
 | Recurso | URL |
@@ -74,20 +88,21 @@ Usuarios demo, todos con contraseña `Demo!2026`:
 
 ```powershell
 dotnet build Siniestros360.slnx
-dotnet test Siniestros360.Tests.Unit/Siniestros360.Tests.Unit.csproj
-dotnet test Siniestros360.Tests.Integration/Siniestros360.Tests.Integration.csproj   # requiere Docker
-dotnet test Siniestros360.LocationSimulator.Tests/Siniestros360.LocationSimulator.Tests.csproj
-npm run build --prefix Siniestros360.CustomerApp
-npm run build --prefix Siniestros360.AdjusterApp
-npm run build --prefix Siniestros360.ControlTower
+dotnet test tests/Siniestros360.Tests.Unit
+dotnet test tests/Siniestros360.Tests.Contracts
+dotnet test tests/Siniestros360.Tests.Integration   # requiere Docker
+dotnet test tests/Siniestros360.LocationSimulator.Tests
+npm run build --prefix apps/insured-app
+npm run build --prefix apps/adjuster-app
+npm run build --prefix apps/control-tower
 ```
 
 Recorrido de punta a punta con Playwright, con el AppHost arriba (detalle en [docs/testing.md](docs/testing.md)):
 
 ```powershell
-npm ci --prefix e2e
-$env:PW_CHANNEL = "chrome"   # usa el Chrome instalado; sin esta variable: npx --prefix e2e playwright install chromium
-npm test --prefix e2e
+npm ci --prefix tests/e2e
+$env:PW_CHANNEL = "chrome"   # usa el Chrome instalado; sin esta variable: npx --prefix tests/e2e playwright install chromium
+npm test --prefix tests/e2e
 ```
 
 ## Qué conceptos técnicos demuestra Siniestros360

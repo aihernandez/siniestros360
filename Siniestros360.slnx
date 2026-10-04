@@ -1,20 +1,41 @@
 <Solution>
-  <Project Path="Siniestros360.AppHost/Siniestros360.AppHost.csproj" />
-  <Project Path="Siniestros360.ServiceDefaults/Siniestros360.ServiceDefaults.csproj" />
-  <Project Path="Siniestros360.Contracts/Siniestros360.Contracts.csproj" />
-  <Project Path="Siniestros360.Messaging/Siniestros360.Messaging.csproj" />
-  <Project Path="Siniestros360.Gateway/Siniestros360.Gateway.csproj" />
-  <Project Path="Siniestros360.IdentityService/Siniestros360.IdentityService.csproj" />
-  <Project Path="Siniestros360.ClaimsService/Siniestros360.ClaimsService.csproj" />
-  <Project Path="Siniestros360.AdjustersService/Siniestros360.AdjustersService.csproj" />
-  <Project Path="Siniestros360.LocationService/Siniestros360.LocationService.csproj" />
-  <Project Path="Siniestros360.DispatchService/Siniestros360.DispatchService.csproj" />
-  <Project Path="Siniestros360.PolicyService/Siniestros360.PolicyService.csproj" />
-  <Project Path="Siniestros360.SlaService/Siniestros360.SlaService.csproj" />
-  <Project Path="Siniestros360.DocumentsService/Siniestros360.DocumentsService.csproj" />
-  <Project Path="Siniestros360.OperationsService/Siniestros360.OperationsService.csproj" />
-  <Project Path="Siniestros360.LocationSimulator/Siniestros360.LocationSimulator.csproj" />
-  <Project Path="Siniestros360.Tests.Unit/Siniestros360.Tests.Unit.csproj" />
-  <Project Path="Siniestros360.Tests.Integration/Siniestros360.Tests.Integration.csproj" />
-  <Project Path="Siniestros360.LocationSimulator.Tests/Siniestros360.LocationSimulator.Tests.csproj" />
+  <Folder Name="/src/" />
+  <Folder Name="/src/aspire/">
+    <Project Path="src/aspire/Siniestros360.AppHost/Siniestros360.AppHost.csproj" />
+    <Project Path="src/aspire/Siniestros360.ServiceDefaults/Siniestros360.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/shared/">
+    <Project Path="src/shared/Siniestros360.Contracts/Siniestros360.Contracts.csproj" />
+    <Project Path="src/shared/Siniestros360.Messaging/Siniestros360.Messaging.csproj" />
+  </Folder>
+  <Folder Name="/src/gateway/">
+    <Project Path="src/gateway/Siniestros360.Gateway/Siniestros360.Gateway.csproj" />
+  </Folder>
+  <Folder Name="/src/services/">
+    <Project Path="src/services/Siniestros360.IdentityService/Siniestros360.IdentityService.csproj" />
+    <Project Path="src/services/Siniestros360.ClaimsService/Siniestros360.ClaimsService.csproj" />
+    <Project Path="src/services/Siniestros360.AdjustersService/Siniestros360.AdjustersService.csproj" />
+    <Project Path="src/services/Siniestros360.LocationService/Siniestros360.LocationService.csproj" />
+    <Project Path="src/services/Siniestros360.DispatchService/Siniestros360.DispatchService.csproj" />
+    <Project Path="src/services/Siniestros360.PolicyService/Siniestros360.PolicyService.csproj" />
+    <Project Path="src/services/Siniestros360.SlaService/Siniestros360.SlaService.csproj" />
+    <Project Path="src/services/Siniestros360.DocumentsService/Siniestros360.DocumentsService.csproj" />
+    <Project Path="src/services/Siniestros360.OperationsService/Siniestros360.OperationsService.csproj" />
+  </Folder>
+  <Folder Name="/src/tools/">
+    <Project Path="src/tools/Siniestros360.LocationSimulator/Siniestros360.LocationSimulator.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Siniestros360.Tests.Unit/Siniestros360.Tests.Unit.csproj" />
+    <Project Path="tests/Siniestros360.Tests.Contracts/Siniestros360.Tests.Contracts.csproj" />
+    <Project Path="tests/Siniestros360.Tests.Integration/Siniestros360.Tests.Integration.csproj" />
+    <Project Path="tests/Siniestros360.LocationSimulator.Tests/Siniestros360.LocationSimulator.Tests.csproj" />
+  </Folder>
+  <Folder Name="/solution-items/">
+    <File Path="README.md" />
+    <File Path=".gitignore" />
+    <File Path=".dockerignore" />
+    <File Path=".github/workflows/ci.yml" />
+    <File Path="dotnet-tools.json" />
+  </Folder>
 </Solution>
