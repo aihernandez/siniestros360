@@ -18,6 +18,7 @@ public sealed class AdjusterEventsConsumer(AdjustersDbContext db) :
 {
     public async Task Consume(ConsumeContext<AdjusterAssigned> context)
     {
+        if (await IsFinished(context.Message.ClaimId, context.CancellationToken)) return;
         await Change(context, context.Message.AdjusterId, AdjusterStatus.Assigned, context.Message.ClaimId, context.Message.AssignedAt);
         await db.SaveChangesAsync(context.CancellationToken);
     }
@@ -26,7 +27,7 @@ public sealed class AdjusterEventsConsumer(AdjustersDbContext db) :
     {
         var e = context.Message;
         await Release(context, e.PreviousAdjusterId, e.ClaimId, e.ReassignedAt);
-        await Change(context, e.NewAdjusterId, AdjusterStatus.Assigned, e.ClaimId, e.ReassignedAt);
+        if (!await IsFinished(e.ClaimId, context.CancellationToken)) await Change(context, e.NewAdjusterId, AdjusterStatus.Assigned, e.ClaimId, e.ReassignedAt);
         await db.SaveChangesAsync(context.CancellationToken);
     }
 
@@ -44,6 +45,7 @@ public sealed class AdjusterEventsConsumer(AdjustersDbContext db) :
 
     public async Task Consume(ConsumeContext<AdjusterServiceCompleted> context)
     {
+        await Finish(context.Message.ClaimId, context.Message.CompletedAt, context.CancellationToken);
         await Release(context, context.Message.AdjusterId, context.Message.ClaimId, context.Message.CompletedAt);
         await db.SaveChangesAsync(context.CancellationToken);
     }
@@ -51,9 +53,17 @@ public sealed class AdjusterEventsConsumer(AdjustersDbContext db) :
     public async Task Consume(ConsumeContext<ClaimCancelled> context)
     {
         var e = context.Message;
+        await Finish(e.ClaimId, e.CancelledAt, context.CancellationToken);
         var adjuster = await db.Adjusters.SingleOrDefaultAsync(x => x.ActiveClaimId == e.ClaimId, context.CancellationToken);
         if (adjuster is not null) await Release(context, adjuster.Id, e.ClaimId, e.CancelledAt);
         await db.SaveChangesAsync(context.CancellationToken);
+    }
+
+    private Task<bool> IsFinished(Guid claimId, CancellationToken ct) => db.FinishedClaims.AnyAsync(x => x.ClaimId == claimId, ct);
+
+    private async Task Finish(Guid claimId, DateTimeOffset at, CancellationToken ct)
+    {
+        if (!await IsFinished(claimId, ct)) db.FinishedClaims.Add(new FinishedClaim { ClaimId = claimId, FinishedAt = at });
     }
 
     private async Task Change(ConsumeContext context, Guid adjusterId, AdjusterStatus status, Guid claimId, DateTimeOffset at)

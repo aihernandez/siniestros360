@@ -25,6 +25,14 @@ public sealed class Adjuster
     }
 }
 
+// Siniestro cerrado o cancelado. Los eventos llegan fuera de orden: una asignación procesada después de la cancelación
+// ataba al ajustador a un siniestro terminado. Con este registro, la asignación tardía se ignora.
+public sealed class FinishedClaim
+{
+    public Guid ClaimId { get; set; }
+    public DateTimeOffset FinishedAt { get; set; }
+}
+
 // Unidades de la demo. Sus IDs coinciden con los que usa Siniestros360.LocationSimulator (un dígito repetido 32 veces).
 public static class DemoAdjusters
 {
