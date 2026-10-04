@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Siniestros360.Contracts.Messaging;
+using Siniestros360.Contracts.Common;
 using Siniestros360.IdentityService.Domain;
 
 namespace Siniestros360.IdentityService.Infrastructure;

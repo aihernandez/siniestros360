@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
-using ContractClaimTypes = Siniestros360.Contracts.Messaging.ClaimTypes;
+using ContractClaimTypes = Siniestros360.Contracts.Common.ClaimTypes;
 
 namespace Microsoft.Extensions.Hosting;
 

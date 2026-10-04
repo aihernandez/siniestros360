@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Siniestros360.IdentityService.Domain;
 using Siniestros360.IdentityService.Infrastructure;
-using ContractClaimTypes = Siniestros360.Contracts.Messaging.ClaimTypes;
+using ContractClaimTypes = Siniestros360.Contracts.Common.ClaimTypes;
 
 namespace Siniestros360.IdentityService.Application;
 

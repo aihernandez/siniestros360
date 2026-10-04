@@ -10,7 +10,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Siniestros360.Contracts.Messaging;
+using Siniestros360.Contracts.Common;
 using System.Text;
 using System.Text.Json.Serialization;
 

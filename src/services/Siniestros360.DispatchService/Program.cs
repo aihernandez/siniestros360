@@ -1,7 +1,7 @@
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Siniestros360.Contracts.Messaging;
+using Siniestros360.Contracts.Common;
 using Siniestros360.DispatchService.Application;
 using Siniestros360.DispatchService.Domain;
 using Siniestros360.DispatchService.Infrastructure;

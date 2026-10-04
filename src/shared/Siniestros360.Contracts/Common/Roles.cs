@@ -1,4 +1,4 @@
-namespace Siniestros360.Contracts.Messaging;
+namespace Siniestros360.Contracts.Common;
 
 public static class Roles
 {

@@ -81,7 +81,7 @@ public static class Tokens
     public static string For(string subject, string role, Guid? adjusterId = null)
     {
         var claims = new List<Claim> { new(JwtRegisteredClaimNames.Sub, subject), new(ClaimTypes.NameIdentifier, subject), new(ClaimTypes.Role, role) };
-        if (adjusterId is not null) claims.Add(new Claim(Siniestros360.Contracts.Messaging.ClaimTypes.AdjusterId, adjusterId.Value.ToString()));
+        if (adjusterId is not null) claims.Add(new Claim(Siniestros360.Contracts.Common.ClaimTypes.AdjusterId, adjusterId.Value.ToString()));
         var token = new JwtSecurityToken("Siniestros360.Identity", "Siniestros360", claims, expires: DateTime.UtcNow.AddMinutes(10), signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Key)), SecurityAlgorithms.HmacSha256));
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
