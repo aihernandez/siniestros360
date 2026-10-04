@@ -1,0 +1,32 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.5.4">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\services\Siniestros360.AdjustersService\Siniestros360.AdjustersService.csproj" />
+    <ProjectReference Include="..\..\services\Siniestros360.ClaimsService\Siniestros360.ClaimsService.csproj" />
+    <ProjectReference Include="..\..\services\Siniestros360.DispatchService\Siniestros360.DispatchService.csproj" />
+    <ProjectReference Include="..\..\services\Siniestros360.DocumentsService\Siniestros360.DocumentsService.csproj" />
+    <ProjectReference Include="..\..\gateway\Siniestros360.Gateway\Siniestros360.Gateway.csproj" />
+    <ProjectReference Include="..\..\services\Siniestros360.IdentityService\Siniestros360.IdentityService.csproj" />
+    <ProjectReference Include="..\..\services\Siniestros360.LocationService\Siniestros360.LocationService.csproj" />
+    <ProjectReference Include="..\..\services\Siniestros360.OperationsService\Siniestros360.OperationsService.csproj" />
+    <ProjectReference Include="..\..\services\Siniestros360.PolicyService\Siniestros360.PolicyService.csproj" />
+    <ProjectReference Include="..\..\services\Siniestros360.SlaService\Siniestros360.SlaService.csproj" />
+    <ProjectReference Include="..\..\tools\Siniestros360.LocationSimulator\Siniestros360.LocationSimulator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.5.4" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.5.4" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.5.3" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <UserSecretsId>7d3e50cf-69e8-466a-8a39-6ecd20a6e0de</UserSecretsId>
+  </PropertyGroup>
+
+</Project>
