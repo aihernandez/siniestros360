@@ -2,6 +2,7 @@
   <ItemGroup><PackageReference Include="Testcontainers.PostgreSql" /><PackageReference Include="FluentAssertions" /><PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" /><PackageReference Include="System.IdentityModel.Tokens.Jwt" /></ItemGroup>
   <!-- Cada servicio define su propio Program: los alias permiten levantar varios en el mismo proyecto de pruebas. -->
   <ItemGroup>
+    <ProjectReference Include="..\..\src\services\Siniestros360.AdjustersService\Siniestros360.AdjustersService.csproj" Aliases="adjusters" />
     <ProjectReference Include="..\..\src\services\Siniestros360.ClaimsService\Siniestros360.ClaimsService.csproj" Aliases="claims" />
     <ProjectReference Include="..\..\src\services\Siniestros360.DocumentsService\Siniestros360.DocumentsService.csproj" Aliases="documents" />
     <ProjectReference Include="..\..\src\services\Siniestros360.OperationsService\Siniestros360.OperationsService.csproj" Aliases="operations" />
