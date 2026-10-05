@@ -66,7 +66,8 @@ public static class Extensions
             };
         });
         builder.Services.AddOpenApi();
-        builder.Services.AddValidation();
+        // AddValidation() no va aquí: su generador sólo descubre los tipos del ensamblado donde se llama, así que cada
+        // servicio lo llama en su Program.cs. Llamarlo aquí dejaba la validación de entrada sin efecto (BUG-043).
         builder.Services.ConfigureHttpJsonOptions(options =>
             options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddHttpContextAccessor();
@@ -109,7 +110,7 @@ public static class Extensions
                     }
                 };
             });
-        builder.Services.AddAuthorization();
+        builder.Services.AddSiniestrosAuthorization();
         return builder;
     }
 
@@ -227,7 +228,7 @@ public static class Extensions
         app.UseAuthorization();
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi();
+            app.MapOpenApi().AllowAnonymous();
         }
 
         app.MapDefaultEndpoints();
