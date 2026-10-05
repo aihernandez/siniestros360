@@ -1,12 +1,14 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Siniestros360.IdentityService.Application;
 using Siniestros360.IdentityService.Domain;
+using Siniestros360.IdentityService.Endpoints;
 using Siniestros360.IdentityService.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddSiniestrosApiDefaults();
+// En este ensamblado: el generador de validación sólo descubre los tipos de los endpoints del proyecto que lo llama.
+builder.Services.AddValidation();
 builder.Services.AddDbContext<IdentityData>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("identitydb");
@@ -31,29 +33,10 @@ using (var scope = app.Services.CreateScope())
     await IdentitySeed.InitializeAsync(scope.ServiceProvider);
 }
 
-var auth = app.MapGroup("/api/v1/auth").WithTags("Authentication");
-auth.MapPost("/login", async (LoginRequest request, UserManager<ApplicationUser> users, TokenService tokens, CancellationToken ct) =>
-{
-    var user = await users.FindByEmailAsync(request.Email);
-    if (user is null || !await users.CheckPasswordAsync(user, request.Password))
-        return Results.Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Invalid credentials");
-    return Results.Ok(await tokens.IssueAsync(user, ct));
-}).AllowAnonymous();
-auth.MapPost("/refresh", async (RefreshRequest request, TokenService tokens, CancellationToken ct) =>
-{
-    var result = await tokens.RefreshAsync(request.RefreshToken, ct);
-    return result is null
-        ? Results.Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Invalid refresh token")
-        : Results.Ok(result);
-}).AllowAnonymous();
-auth.MapGet("/me", (ClaimsPrincipal user) => Results.Ok(new
-{
-    id = user.FindFirstValue(ClaimTypes.NameIdentifier),
-    email = user.FindFirstValue(ClaimTypes.Email),
-    name = user.FindFirstValue(ClaimTypes.Name),
-    adjusterId = user.FindFirstValue("adjuster_id"),
-    roles = user.FindAll(ClaimTypes.Role).Select(x => x.Value)
-})).RequireAuthorization();
+app.MapGroup("/api/v1/auth")
+    .WithTags("Authentication")
+    .MapAuthEndpoints();
 
 app.Run();
+
 public partial class Program;

@@ -48,27 +48,27 @@ public sealed class Claim
     public void Arrive(Guid adjusterId, DateTimeOffset at)
     {
         EnsureAssignedTo(adjusterId);
-        if (Status != ClaimStatus.Assigned) throw new ClaimStateException("The adjuster can arrive only to an assigned claim.");
+        if (Status != ClaimStatus.Assigned) throw new ClaimStateException("Sólo se puede registrar la llegada a un siniestro asignado.");
         Transition(ClaimStatus.AdjusterArrived, at, "adjuster.arrived", "Adjuster arrived at incident.");
     }
 
     public void Start(Guid adjusterId, DateTimeOffset at)
     {
         EnsureAssignedTo(adjusterId);
-        if (Status != ClaimStatus.AdjusterArrived) throw new ClaimStateException("Service can start only after adjuster arrival.");
+        if (Status != ClaimStatus.AdjusterArrived) throw new ClaimStateException("La atención sólo puede iniciar después de registrar la llegada.");
         Transition(ClaimStatus.InProgress, at, "service.started", "On-site service started.");
     }
 
     public void Complete(Guid adjusterId, DateTimeOffset at)
     {
         EnsureAssignedTo(adjusterId);
-        if (Status != ClaimStatus.InProgress) throw new ClaimStateException("Claim can close only after service started.");
+        if (Status != ClaimStatus.InProgress) throw new ClaimStateException("El servicio sólo puede finalizar después de iniciar la atención.");
         Transition(ClaimStatus.Closed, at, "service.completed", "Claim service completed.");
     }
 
     public void Cancel(string reason, DateTimeOffset at)
     {
-        if (IsFinished) throw new ClaimStateException("A closed or cancelled claim cannot be changed.");
+        if (IsFinished) throw new ClaimStateException("Un siniestro cerrado o cancelado ya no puede cambiar.");
         Transition(ClaimStatus.Cancelled, at, "claim.cancelled", reason);
     }
 
@@ -96,7 +96,7 @@ public sealed class Claim
 
     private void Transition(ClaimStatus next, DateTimeOffset at, string type, string details, Action? effect = null)
     {
-        if (IsFinished) throw new ClaimStateException("A closed or cancelled claim cannot be changed.");
+        if (IsFinished) throw new ClaimStateException("Un siniestro cerrado o cancelado ya no puede cambiar.");
         effect?.Invoke();
         Status = next;
         UpdatedAt = at;

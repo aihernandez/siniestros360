@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -68,5 +69,5 @@ public sealed class TokenService(
 }
 
 public sealed record TokenResponse(string AccessToken, string RefreshToken, DateTimeOffset ExpiresAt, string[] Roles);
-public sealed record LoginRequest(string Email, string Password);
-public sealed record RefreshRequest(string RefreshToken);
+public sealed record LoginRequest([property: Required] string Email, [property: Required] string Password);
+public sealed record RefreshRequest([property: Required] string RefreshToken);

@@ -89,7 +89,10 @@ internal sealed class IdempotencyFilter(IdempotentAttribute attribute, int[] req
             await db.SaveChangesAsync(ct);
 
             var result = await next(context);
-            if (result is not IStatusCodeHttpResult { StatusCode: >= 200 and < 300 } status || result is not IValueHttpResult value)
+            // Un handler con retorno Results<Ok<T>, NotFound, …> entrega el envoltorio: el código y el cuerpo están en el
+            // resultado anidado. Sin desenvolverlo, todo comando exitoso se revertiría.
+            var actual = result is INestedHttpResult nested ? nested.Result : result;
+            if (actual is not IStatusCodeHttpResult { StatusCode: >= 200 and < 300 } status || actual is not IValueHttpResult value)
             {
                 await Rollback(transaction, db, rollbackActions);
                 return result;

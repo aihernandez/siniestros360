@@ -28,10 +28,12 @@ Cada servicio tiene su propia base de datos y migraciones. Ningún servicio cons
 | `src/aspire/` | `AppHost` (topología local) y `ServiceDefaults` (telemetría, health checks, resiliencia, seguridad común) |
 | `src/shared/` | `Contracts` (eventos de integración y roles) y `Messaging` (MassTransit, outbox, inbox e idempotencia) |
 | `src/gateway/` | `Gateway` (YARP) |
-| `src/services/` | Los 9 microservicios, cada uno con `Domain/`, `Application/`, `Infrastructure/` y su `Dockerfile` |
+| `src/services/` | Los 9 microservicios, cada uno con `Endpoints/` (comandos y consultas HTTP), `Domain/`, `Application/` (consumidores y DTO), `Infrastructure/` y su `Dockerfile` |
 | `src/tools/` | `LocationSimulator` (GPS simulado de los 5 ajustadores) |
 | `tests/` | Unitarias, de contrato, de integración, del simulador y `e2e/` con Playwright |
 | `apps/` | `insured-app`, `adjuster-app` y `control-tower`: React/Vite; las dos primeras se empaquetan con Capacitor |
+
+La autorización se declara con políticas con nombre y por recurso de `ServiceDefaults/Security` (ver `docs/security.md`); todo endpoint es privado salvo `AllowAnonymous`.
 
 Cada proyecto .NET vive en una carpeta con su nombre completo (`src/services/Siniestros360.ClaimsService/`). La solución `Siniestros360.slnx` tiene las mismas carpetas. Los Dockerfiles se construyen desde la raíz: `docker build -f src/services/Siniestros360.ClaimsService/Dockerfile .`
 

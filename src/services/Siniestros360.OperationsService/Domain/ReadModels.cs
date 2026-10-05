@@ -1,12 +1,11 @@
-using System.Text.Json.Serialization;
-
 namespace Siniestros360.OperationsService.Domain;
 
 // Vista consolidada del siniestro para la torre. Se construye sólo con eventos; nunca consulta otras bases.
+// Es una tabla interna: lo que sale por REST y SignalR son las vistas de Application/Views.cs.
 public sealed class ClaimReadModel
 {
     public Guid ClaimId { get; set; }
-    [JsonIgnore] public string InsuredId { get; set; } = "";
+    public string InsuredId { get; set; } = "";
     public string Folio { get; set; } = "";
     public string PolicyNumber { get; set; } = "";
     public string VehiclePlate { get; set; } = "";
@@ -28,8 +27,8 @@ public sealed class ClaimReadModel
     public DateTimeOffset ReportedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
     public int DocumentCount { get; set; }
-    [JsonIgnore] public long LastVersion { get; set; }
-    [JsonIgnore] public bool IsFinished => Status is "Closed" or "Cancelled";
+    public long LastVersion { get; set; }
+    public bool IsFinished => Status is "Closed" or "Cancelled";
 }
 
 public sealed class AdjusterReadModel
@@ -43,11 +42,11 @@ public sealed class AdjusterReadModel
     public decimal? Longitude { get; set; }
     public double? SpeedKmh { get; set; }
     public double? Heading { get; set; }
-    [JsonIgnore] public long Sequence { get; set; }
+    public long Sequence { get; set; }
     public DateTimeOffset? CapturedAt { get; set; }
     public bool GpsStale { get; set; }
-    [JsonIgnore] public DateTimeOffset? StatusChangedAt { get; set; }
-    [JsonIgnore] public uint RowVersion { get; set; }
+    public DateTimeOffset? StatusChangedAt { get; set; }
+    public uint RowVersion { get; set; }
 }
 
 public sealed class OperationalAlert
