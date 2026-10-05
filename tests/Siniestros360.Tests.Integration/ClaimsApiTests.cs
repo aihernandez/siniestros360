@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Siniestros360.Contracts.Events;
 using ClaimsDbContext = claims::Siniestros360.ClaimsService.Infrastructure.ClaimsDbContext;
 using ClaimsProgram = claims::Program;
-using ReportClaimRequest = claims::Siniestros360.ClaimsService.Application.ReportClaimRequest;
+using ReportClaimRequest = claims::Siniestros360.ClaimsService.Endpoints.Claims.ReportClaimRequest;
 
 namespace Siniestros360.Tests.Integration;
 

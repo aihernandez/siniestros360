@@ -27,6 +27,9 @@ public class Result
     public static Result Failure(Error error) => new(false, error);
 
     public static Result<TValue> Failure<TValue>(Error error) => new(default, false, error);
+
+    // Permite `return ClaimErrors.AlreadyFinished;` en un método que devuelve Result.
+    public static implicit operator Result(Error error) => Failure(error);
 }
 
 public sealed class Result<TValue> : Result

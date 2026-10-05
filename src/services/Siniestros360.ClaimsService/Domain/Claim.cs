@@ -1,3 +1,5 @@
+using Siniestros360.SharedKernel;
+
 namespace Siniestros360.ClaimsService.Domain;
 
 public enum ClaimStatus
@@ -36,6 +38,30 @@ public sealed class Claim
 
     public bool IsFinished => Status is ClaimStatus.Closed or ClaimStatus.Cancelled;
 
+    // Alta del siniestro: folio inmediato, en espera de asignación. La póliza se valida después, por eventos.
+    public static Claim Report(string insuredId, string policyNumber, string vehiclePlate, string incidentType, decimal latitude, decimal longitude, bool requiresAmbulance, DateTimeOffset at)
+    {
+        var id = Guid.NewGuid();
+        var claim = new Claim
+        {
+            Id = id,
+            InsuredId = insuredId,
+            Folio = $"SIN-{at:yyyy}-{id.ToString("N")[..8].ToUpperInvariant()}",
+            PolicyNumber = policyNumber,
+            VehiclePlate = vehiclePlate,
+            IncidentType = incidentType,
+            Latitude = latitude,
+            Longitude = longitude,
+            RequiresAmbulance = requiresAmbulance,
+            Status = ClaimStatus.AssignmentPending,
+            ReportedAt = at,
+            UpdatedAt = at,
+            Version = 1,
+        };
+        claim.Timeline.Add(claim.NewTimeline("claim.reported", "Claim reported.", at));
+        return claim;
+    }
+
     // Asignación o reasignación decidida por Dispatch. Se ignora si el ajustador ya llegó o el siniestro terminó.
     public bool TryAssign(Guid adjusterId, DateTimeOffset at, bool isReassignment)
     {
@@ -45,31 +71,22 @@ public sealed class Claim
         return true;
     }
 
-    public void Arrive(Guid adjusterId, DateTimeOffset at)
-    {
-        EnsureAssignedTo(adjusterId);
-        if (Status != ClaimStatus.Assigned) throw new ClaimStateException("Sólo se puede registrar la llegada a un siniestro asignado.");
-        Transition(ClaimStatus.AdjusterArrived, at, "adjuster.arrived", "Adjuster arrived at incident.");
-    }
+    // Las transiciones del ajustador devuelven Result: una regla incumplida es un resultado esperado (409 o 403), no una
+    // excepción. Primero se comprueba que el siniestro siga abierto, luego quién actúa y por último el estado de origen.
+    public Result Arrive(Guid adjusterId, DateTimeOffset at)
+        => Advance(adjusterId, ClaimStatus.Assigned, ClaimErrors.ArrivalRequiresAssignment, ClaimStatus.AdjusterArrived, at, "adjuster.arrived", "Adjuster arrived at incident.");
 
-    public void Start(Guid adjusterId, DateTimeOffset at)
-    {
-        EnsureAssignedTo(adjusterId);
-        if (Status != ClaimStatus.AdjusterArrived) throw new ClaimStateException("La atención sólo puede iniciar después de registrar la llegada.");
-        Transition(ClaimStatus.InProgress, at, "service.started", "On-site service started.");
-    }
+    public Result Start(Guid adjusterId, DateTimeOffset at)
+        => Advance(adjusterId, ClaimStatus.AdjusterArrived, ClaimErrors.StartRequiresArrival, ClaimStatus.InProgress, at, "service.started", "On-site service started.");
 
-    public void Complete(Guid adjusterId, DateTimeOffset at)
-    {
-        EnsureAssignedTo(adjusterId);
-        if (Status != ClaimStatus.InProgress) throw new ClaimStateException("El servicio sólo puede finalizar después de iniciar la atención.");
-        Transition(ClaimStatus.Closed, at, "service.completed", "Claim service completed.");
-    }
+    public Result Complete(Guid adjusterId, DateTimeOffset at)
+        => Advance(adjusterId, ClaimStatus.InProgress, ClaimErrors.CompleteRequiresStart, ClaimStatus.Closed, at, "service.completed", "Claim service completed.");
 
-    public void Cancel(string reason, DateTimeOffset at)
+    public Result Cancel(string reason, DateTimeOffset at)
     {
-        if (IsFinished) throw new ClaimStateException("Un siniestro cerrado o cancelado ya no puede cambiar.");
+        if (IsFinished) return ClaimErrors.AlreadyFinished;
         Transition(ClaimStatus.Cancelled, at, "claim.cancelled", reason);
+        return Result.Success();
     }
 
     public void Escalate(string reason, DateTimeOffset at)
@@ -94,19 +111,23 @@ public sealed class Claim
 
     public void RecordDispatchIssue(string reason, DateTimeOffset at) => Timeline.Add(NewTimeline("dispatch.unavailable", reason, at));
 
+    private Result Advance(Guid adjusterId, ClaimStatus requiredStatus, Error wrongStatus, ClaimStatus next, DateTimeOffset at, string type, string details)
+    {
+        if (IsFinished) return ClaimErrors.AlreadyFinished;
+        if (AssignedAdjusterId != adjusterId) return ClaimErrors.NotAssignedAdjuster;
+        if (Status != requiredStatus) return wrongStatus;
+        Transition(next, at, type, details);
+        return Result.Success();
+    }
+
+    // Quien llama ya comprobó que el siniestro sigue abierto.
     private void Transition(ClaimStatus next, DateTimeOffset at, string type, string details, Action? effect = null)
     {
-        if (IsFinished) throw new ClaimStateException("Un siniestro cerrado o cancelado ya no puede cambiar.");
         effect?.Invoke();
         Status = next;
         UpdatedAt = at;
         Version++;
         Timeline.Add(NewTimeline(type, details, at));
-    }
-
-    private void EnsureAssignedTo(Guid adjusterId)
-    {
-        if (AssignedAdjusterId != adjusterId) throw new UnauthorizedAccessException("The adjuster is not assigned to this claim.");
     }
 
     private ClaimTimelineEntry NewTimeline(string type, string details, DateTimeOffset at) => new() { Id = Guid.NewGuid(), ClaimId = Id, Type = type, Details = details, OccurredAt = at };
@@ -120,5 +141,3 @@ public sealed class ClaimTimelineEntry
     public string Details { get; set; } = default!;
     public DateTimeOffset OccurredAt { get; set; }
 }
-
-public sealed class ClaimStateException(string message) : InvalidOperationException(message);

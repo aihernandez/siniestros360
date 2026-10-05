@@ -11,8 +11,9 @@ public sealed class ClaimStateTests
     public void Service_cannot_start_before_arrival()
     {
         var claim = AssignedClaim();
-        var action = () => claim.Start(AdjusterId, DateTimeOffset.UtcNow);
-        action.Should().Throw<ClaimStateException>().WithMessage("*llegada*");
+        var result = claim.Start(AdjusterId, DateTimeOffset.UtcNow);
+        result.Error.Should().Be(ClaimErrors.StartRequiresArrival);
+        claim.Status.Should().Be(ClaimStatus.Assigned);
     }
 
     [Fact]
@@ -20,8 +21,7 @@ public sealed class ClaimStateTests
     {
         var claim = AssignedClaim(); var now = DateTimeOffset.UtcNow;
         claim.Arrive(AdjusterId, now); claim.Start(AdjusterId, now); claim.Complete(AdjusterId, now);
-        var action = () => claim.Cancel("late cancellation", now);
-        action.Should().Throw<ClaimStateException>();
+        claim.Cancel("late cancellation", now).Error.Should().Be(ClaimErrors.AlreadyFinished);
         claim.Status.Should().Be(ClaimStatus.Closed);
     }
 
@@ -40,8 +40,8 @@ public sealed class ClaimStateTests
     public void Only_the_assigned_adjuster_can_arrive()
     {
         var claim = AssignedClaim();
-        var action = () => claim.Arrive(Guid.NewGuid(), DateTimeOffset.UtcNow);
-        action.Should().Throw<UnauthorizedAccessException>();
+        claim.Arrive(Guid.NewGuid(), DateTimeOffset.UtcNow).Error.Should().Be(ClaimErrors.NotAssignedAdjuster);
+        claim.Status.Should().Be(ClaimStatus.Assigned);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public sealed class ClaimStateTests
 
     private static Claim AssignedClaim()
     {
-        var claim = new Claim { Id = Guid.NewGuid(), InsuredId = "insured-a", Folio = "SIN-1", PolicyNumber = "POL-1", VehiclePlate = "ABC-123", IncidentType = "Collision", Status = ClaimStatus.AssignmentPending, ReportedAt = DateTimeOffset.UtcNow, UpdatedAt = DateTimeOffset.UtcNow, Version = 1 };
+        var claim = Claim.Report("insured-a", "POL-1", "ABC-123", "Collision", 25.68m, -100.31m, false, DateTimeOffset.UtcNow);
         claim.TryAssign(AdjusterId, DateTimeOffset.UtcNow, isReassignment: false).Should().BeTrue();
         return claim;
     }

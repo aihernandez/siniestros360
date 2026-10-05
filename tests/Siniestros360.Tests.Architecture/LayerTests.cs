@@ -26,7 +26,7 @@ public sealed class LayerTests
 
     // Servicios ya organizados por casos de uso (CQRS con handlers). Crece con cada fase del refactor (ADR-008).
     // PROVISIONAL(2026-10-05): sólo los migrados cumplen las reglas de Application y Endpoints — se cierra cuando la lista incluya a los siete servicios con API.
-    private static readonly string[] MigratedToUseCases = [];
+    private static readonly string[] MigratedToUseCases = ["Claims"];
 
     // Excepciones conocidas, con motivo. Cada una debe desaparecer, no crecer.
     // VERIFICAR(2026-10-05): AssignmentState es el estado persistido de la saga de MassTransit (SagaStateMachineInstance); moverlo a Application cambia el modelo de EF y requiere migración — se decide en la fase de Dispatch.
