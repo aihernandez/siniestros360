@@ -164,5 +164,17 @@ public sealed class ClaimsApiTests(ClaimsFactory factory) : IClassFixture<Claims
     }
 
     private static async Task<Guid> Id(HttpResponseMessage response) => (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+    // AddValidation() sólo descubre los tipos del ensamblado donde se llama: si se llama en ServiceDefaults, los
+    // DataAnnotations de ReportClaimRequest (en ClaimsService) no se aplican y el siniestro se crea igual.
+    [Theory]
+    [InlineData(200, -100.3161)]
+    [InlineData(25.6866, -500)]
+    public async Task A_report_with_invalid_coordinates_is_rejected_with_400(double latitude, double longitude)
+    {
+        var report = Report("POL-INVALID") with { Latitude = (decimal)latitude, Longitude = (decimal)longitude };
+        using var response = await factory.ClientFor("insured-invalid", "insured").SendAsync(Requests.Post("/api/v1/claims", report, Requests.NewKey()));
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     private static ReportClaimRequest Report(string policy) => new(policy, "ABC-123", "Collision", 25.6866m, -100.3161m, false);
 }

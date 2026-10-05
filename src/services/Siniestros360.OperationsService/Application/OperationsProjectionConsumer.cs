@@ -180,14 +180,14 @@ public sealed class OperationsProjectionConsumer(OperationsDbContext db, IHubCon
         var alert = NewAlert(context, adjuster.ActiveClaimId, e.AdjusterId, "GpsStale", $"{NameOf(adjuster)} sin señal GPS desde las {TimeZoneInfo.ConvertTime(e.LastSeenAt, Operation):HH:mm}.", e.DetectedAt);
         await db.SaveChangesAsync(context.CancellationToken);
         await NotifyAdjuster(e.AdjusterId, context.CancellationToken);
-        await hub.Clients.Group(OperationsHub.TowerGroup).SendAsync("alertRaised", alert, context.CancellationToken);
+        await hub.Clients.Group(OperationsHub.TowerGroup).SendAsync("alertRaised", AlertView.From(alert), context.CancellationToken);
     }
 
     private async Task RaiseAlert(ConsumeContext context, Guid? claimId, Guid? adjusterId, string type, string message, DateTimeOffset at)
     {
         var alert = NewAlert(context, claimId, adjusterId, type, message, at);
         await db.SaveChangesAsync(context.CancellationToken);
-        await hub.Clients.Group(OperationsHub.TowerGroup).SendAsync("alertRaised", alert, context.CancellationToken);
+        await hub.Clients.Group(OperationsHub.TowerGroup).SendAsync("alertRaised", AlertView.From(alert), context.CancellationToken);
     }
 
     // El Id de la alerta es el MessageId: una reentrega nunca crea una segunda alerta.
@@ -205,7 +205,7 @@ public sealed class OperationsProjectionConsumer(OperationsDbContext db, IHubCon
         var targets = new List<string> { OperationsHub.TowerGroup, OperationsHub.ClaimGroup(claim.ClaimId) };
         if (claim.AdjusterId is not null) targets.Add(OperationsHub.AdjusterGroup(claim.AdjusterId.Value));
         targets.AddRange(adjusters.Select(OperationsHub.AdjusterGroup));
-        await hub.Clients.Groups(targets.Distinct().ToList()).SendAsync("claimUpdated", claim, ct);
+        await hub.Clients.Groups(targets.Distinct().ToList()).SendAsync("claimUpdated", ClaimView.From(claim), ct);
         foreach (var adjusterId in adjusters.Distinct()) await NotifyAdjuster(adjusterId, ct);
     }
 
@@ -218,7 +218,7 @@ public sealed class OperationsProjectionConsumer(OperationsDbContext db, IHubCon
     private async Task NotifyAdjuster(Guid adjusterId, CancellationToken ct)
     {
         var adjuster = await db.Adjusters.AsNoTracking().SingleOrDefaultAsync(x => x.AdjusterId == adjusterId, ct);
-        if (adjuster is not null) await hub.Clients.Group(OperationsHub.TowerGroup).SendAsync("adjusterUpdated", adjuster, ct);
+        if (adjuster is not null) await hub.Clients.Group(OperationsHub.TowerGroup).SendAsync("adjusterUpdated", AdjusterView.From(adjuster), ct);
     }
 
     private static void Finish(ClaimReadModel claim, string status, DateTimeOffset at)

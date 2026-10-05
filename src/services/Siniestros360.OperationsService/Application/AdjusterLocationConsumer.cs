@@ -26,6 +26,6 @@ public sealed class AdjusterLocationConsumer(OperationsDbContext db, IHubContext
         if (adjuster.CapturedAt is not null && (e.CapturedAt < adjuster.CapturedAt || (e.CapturedAt == adjuster.CapturedAt && e.Sequence <= adjuster.Sequence))) return;
         adjuster.Latitude = e.Latitude; adjuster.Longitude = e.Longitude; adjuster.SpeedKmh = e.SpeedKmh; adjuster.Heading = e.Heading; adjuster.Sequence = e.Sequence; adjuster.CapturedAt = e.CapturedAt; adjuster.GpsStale = false;
         await db.SaveChangesAsync(context.CancellationToken);
-        await hub.Clients.Group(OperationsHub.TowerGroup).SendAsync("adjusterUpdated", adjuster, context.CancellationToken);
+        await hub.Clients.Group(OperationsHub.TowerGroup).SendAsync("adjusterUpdated", AdjusterView.From(adjuster), context.CancellationToken);
     }
 }

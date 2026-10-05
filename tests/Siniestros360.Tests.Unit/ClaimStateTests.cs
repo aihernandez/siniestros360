@@ -12,7 +12,7 @@ public sealed class ClaimStateTests
     {
         var claim = AssignedClaim();
         var action = () => claim.Start(AdjusterId, DateTimeOffset.UtcNow);
-        action.Should().Throw<ClaimStateException>().WithMessage("*arrival*");
+        action.Should().Throw<ClaimStateException>().WithMessage("*llegada*");
     }
 
     [Fact]
