@@ -2,7 +2,7 @@
 
 Siniestros360 es una demo técnica de atención de siniestros de autos para una sola aseguradora. El asegurado reporta un siniestro con su ubicación, el sistema asigna al ajustador disponible más cercano, la torre de control sigue el caso en tiempo real y el ajustador registra llegada, inicio y cierre. La validación de póliza es asíncrona y nunca bloquea la atención.
 
-Está construida con .NET 10, Aspire, YARP, PostgreSQL/PostGIS, MassTransit sobre Azure Service Bus, SignalR y React/Vite con Capacitor.
+Está construida con .NET 10, Aspire, YARP, PostgreSQL/PostGIS, MassTransit sobre Azure Service Bus, SignalR y React/Vite con Capacitor. El [mapa de servicios y patrones](src/README.md) describe cómo se conectan estas piezas en el código.
 
 ## Arquitectura
 
@@ -11,7 +11,7 @@ Está construida con .NET 10, Aspire, YARP, PostgreSQL/PostGIS, MassTransit sobr
 - `ClaimsService`: expediente, folio, máquina de estados y bitácora.
 - `AdjustersService`: catálogo, disponibilidad y estado operativo de ajustadores.
 - `LocationService`: GPS con PostGIS y detección de GPS sin actualizar.
-- `DispatchService`: saga de asignación y reasignación (máquina de estado de MassTransit).
+- `DispatchService`: saga de MassTransit que inicia en paralelo la validación de póliza y la asignación; registra el resultado y compensa las reservas al reasignar, cerrar o cancelar.
 - `PolicyService`: validación asíncrona con timeout, retry, circuit breaker y fallback.
 - `SlaService`: plazos por etapa, avisos, vencimientos y escalación.
 - `DocumentsService`: metadatos y almacenamiento local o Azure Blob.
@@ -26,14 +26,26 @@ Cada servicio tiene su propia base de datos y migraciones. Ningún servicio cons
 | Carpeta | Contenido |
 |---|---|
 | `src/aspire/` | `AppHost` (topología local) y `ServiceDefaults` (telemetría, health checks, resiliencia, seguridad común) |
-| `src/shared/` | `Contracts` (eventos de integración y roles) y `Messaging` (MassTransit, outbox, inbox e idempotencia) |
+| `src/shared/` | `Contracts` (eventos, roles y versiones de API), `SharedKernel` (CQRS y Result) y `Messaging` (MassTransit, outbox, inbox e idempotencia) |
 | `src/gateway/` | `Gateway` (YARP) |
 | `src/services/` | Los 9 microservicios, cada uno con `Endpoints/` (comandos y consultas HTTP), `Domain/`, `Application/` (consumidores y DTO), `Infrastructure/` y su `Dockerfile` |
 | `src/tools/` | `LocationSimulator` (GPS simulado de los 5 ajustadores) |
-| `tests/` | Unitarias, de contrato, de integración, del simulador y `e2e/` con Playwright |
+| `tests/` | Unitarias, de contrato, de arquitectura, de integración, del simulador y `e2e/` con Playwright; ver [guía de pruebas](tests/README.md) |
 | `apps/` | `insured-app`, `adjuster-app` y `control-tower`: React/Vite; las dos primeras se empaquetan con Capacitor |
 
-La autorización se declara con políticas con nombre y por recurso de `ServiceDefaults/Security` (ver `docs/security.md`); todo endpoint es privado salvo `AllowAnonymous`.
+La autorización se declara con políticas con nombre y por recurso de `ServiceDefaults/Security`; todo endpoint es privado salvo `AllowAnonymous`.
+
+Las API HTTP de negocio publican `/api/v1/...` con metadatos de versión y OpenAPI por versión.
+
+### Versiones de API
+
+El contrato REST usa la versión mayor en la ruta: `/api/v{version}/...`. La versión publicada es **v1** en Identity (`auth`), Claims, Adjusters, Location (`locations`), Dispatch (`dispatch/claims`), Documents y Operations. El simulador local expone `/api/v1/simulator`. El gateway acepta el segmento de versión y conserva la ruta; cada servicio decide si la versión está soportada. En desarrollo, cada servicio REST y el simulador generan `/openapi/v1.json`; las respuestas versionadas informan `api-supported-versions`.
+
+`ApiVersions.V1` en `src/shared/Siniestros360.Contracts/Common/ApiVersions.cs` es la constante de la versión mayor. Los registros de rutas y las URL de respuesta se construyen con ella; el gateway conserva una plantilla de ruta capaz de recibir otras versiones.
+
+Los cambios compatibles permanecen en v1. Un cambio que modifica de forma incompatible rutas, campos requeridos, su significado o códigos de respuesta crea v2. Durante la migración, ambas versiones deben funcionar y tener pruebas de contrato. Antes de retirar una versión se registra y comunica la fecha de fin de soporte y la ruta de migración; una versión obsoleta se anuncia con `api-deprecated-versions`. La versión HTTP es independiente de la release Git y de los eventos de mensajería.
+
+`/health`, `/alive`, `/gateway/info`, los hubs SignalR y la página raíz del simulador son superficies operativas fuera del contrato REST versionado. PolicyService y SlaService no exponen endpoints REST de negocio.
 
 Cada proyecto .NET vive en una carpeta con su nombre completo (`src/services/Siniestros360.ClaimsService/`). La solución `Siniestros360.slnx` tiene las mismas carpetas. Los Dockerfiles se construyen desde la raíz: `docker build -f src/services/Siniestros360.ClaimsService/Dockerfile .`
 
@@ -43,6 +55,26 @@ Cada proyecto .NET vive en una carpeta con su nombre completo (`src/services/Sin
 - Node.js 22.
 - Docker Desktop (PostgreSQL local y pruebas de integración).
 - Un namespace de Azure Service Bus tier Standard (Basic no admite topics). El emulador local no funciona con MassTransit 8, porque su API de administración usa otro puerto. El tier Standard tiene un cargo base de unos 10 USD al mes.
+
+## Versiones de librerías
+
+Estas son las versiones **declaradas** por el repositorio. `Directory.Packages.props` es la fuente de las versiones NuGet; los `package.json` y `package-lock.json` de cada app fijan sus dependencias JavaScript. Los prefijos `^` y `~` de npm permiten instalar versiones compatibles dentro del rango indicado.
+
+| Componente | Versión declarada |
+|---|---|
+| .NET / ASP.NET Core / EF Core | 10 / 10.0.11 / 10.0.11 |
+| .NET Aspire | 13.5.4 |
+| PostgreSQL/PostGIS (imagen local) | 16-3.4 |
+| Versionado de API (`Asp.Versioning.Http`, `OpenApi`) | 10.2.3 |
+| YARP / Service Discovery | 2.3.0 / 10.8.0 |
+| Resiliencia HTTP (`Microsoft.Extensions.Http.Resilience`) | 10.8.0 |
+| MassTransit y transporte Azure Service Bus | 8.5.11 |
+| Npgsql EF Core / PostGIS | 10.0.3 |
+| Scrutor / FluentValidation | 7.0.0 / 12.1.1 |
+| OpenTelemetry SDK y exportador OTLP | 1.15.3 |
+| React / Vite / TypeScript | ^19.2.8 / ^8.2.2 / ~6.0.2 |
+| Capacitor Android / SignalR JavaScript | ^8.5.1 / ^10.0.11 |
+| xUnit / Testcontainers PostgreSQL / Playwright | 2.9.3 / 4.15.0 / ^1.63.0 |
 
 ## Ejecución local
 
@@ -99,7 +131,7 @@ npm run build --prefix apps/adjuster-app
 npm run build --prefix apps/control-tower
 ```
 
-Recorrido de punta a punta con Playwright, con el AppHost arriba (detalle en [docs/testing.md](docs/testing.md)):
+Recorrido de punta a punta con Playwright, con el AppHost arriba (detalle en [tests/README.md](tests/README.md)):
 
 ```powershell
 npm ci --prefix tests/e2e
