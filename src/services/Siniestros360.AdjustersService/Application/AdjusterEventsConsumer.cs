@@ -18,8 +18,9 @@ public sealed class AdjusterEventsConsumer(AdjustersDbContext db) :
 {
     public async Task Consume(ConsumeContext<AdjusterAssigned> context)
     {
-        if (await IsFinished(context.Message.ClaimId, context.CancellationToken)) return;
-        await Change(context, context.Message.AdjusterId, AdjusterStatus.Assigned, context.Message.ClaimId, context.Message.AssignedAt);
+        var e = context.Message;
+        if (await TryAssign(e.ClaimId, e.AdjusterId, e.AssignedAt, context.CancellationToken))
+            await Change(context, e.AdjusterId, AdjusterStatus.Assigned, e.ClaimId, e.AssignedAt);
         await db.SaveChangesAsync(context.CancellationToken);
     }
 
@@ -27,7 +28,8 @@ public sealed class AdjusterEventsConsumer(AdjustersDbContext db) :
     {
         var e = context.Message;
         await Release(context, e.PreviousAdjusterId, e.ClaimId, e.ReassignedAt);
-        if (!await IsFinished(e.ClaimId, context.CancellationToken)) await Change(context, e.NewAdjusterId, AdjusterStatus.Assigned, e.ClaimId, e.ReassignedAt);
+        if (await TryAssign(e.ClaimId, e.NewAdjusterId, e.ReassignedAt, context.CancellationToken))
+            await Change(context, e.NewAdjusterId, AdjusterStatus.Assigned, e.ClaimId, e.ReassignedAt);
         await db.SaveChangesAsync(context.CancellationToken);
     }
 
@@ -59,11 +61,31 @@ public sealed class AdjusterEventsConsumer(AdjustersDbContext db) :
         await db.SaveChangesAsync(context.CancellationToken);
     }
 
-    private Task<bool> IsFinished(Guid claimId, CancellationToken ct) => db.FinishedClaims.AnyAsync(x => x.ClaimId == claimId, ct);
+    // Registra la asignación en la fila del siniestro; false si el siniestro ya terminó.
+    private async Task<bool> TryAssign(Guid claimId, Guid adjusterId, DateTimeOffset at, CancellationToken ct)
+    {
+        var record = await Record(claimId, ct);
+        record.UpdatedAt = at > record.UpdatedAt ? at : record.UpdatedAt.AddTicks(1);
+        if (record.FinishedAt is not null) return false;
+        record.AdjusterId = adjusterId;
+        return true;
+    }
 
     private async Task Finish(Guid claimId, DateTimeOffset at, CancellationToken ct)
     {
-        if (!await IsFinished(claimId, ct)) db.FinishedClaims.Add(new FinishedClaim { ClaimId = claimId, FinishedAt = at });
+        var record = await Record(claimId, ct);
+        record.FinishedAt ??= at;
+        record.UpdatedAt = at > record.UpdatedAt ? at : record.UpdatedAt.AddTicks(1);
+    }
+
+    // UpdatedAt siempre cambia: así cada escritura es un UPDATE real que choca por RowVersion con otra concurrente.
+    private async Task<ClaimRecord> Record(Guid claimId, CancellationToken ct)
+    {
+        var record = await db.ClaimRecords.SingleOrDefaultAsync(x => x.ClaimId == claimId, ct);
+        if (record is not null) return record;
+        record = new ClaimRecord { ClaimId = claimId };
+        db.ClaimRecords.Add(record);
+        return record;
     }
 
     private async Task Change(ConsumeContext context, Guid adjusterId, AdjusterStatus status, Guid claimId, DateTimeOffset at)

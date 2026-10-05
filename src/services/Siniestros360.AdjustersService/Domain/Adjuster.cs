@@ -25,12 +25,17 @@ public sealed class Adjuster
     }
 }
 
-// Siniestro cerrado o cancelado. Los eventos llegan fuera de orden: una asignación procesada después de la cancelación
-// ataba al ajustador a un siniestro terminado. Con este registro, la asignación tardía se ignora.
-public sealed class FinishedClaim
+// Lo que Adjusters sabe de cada siniestro. La asignación (de Dispatch) y la cancelación o el cierre (de Claims) llegan
+// por topics distintos, sin orden y a veces a la vez. Todos escriben esta fila: si dos se procesan en paralelo chocan en
+// ella (llave duplicada o RowVersion) y el reintento decide viendo lo que el otro confirmó. Así una asignación nunca ata
+// al ajustador a un siniestro ya terminado, llegue antes, después o al mismo tiempo que la cancelación.
+public sealed class ClaimRecord
 {
     public Guid ClaimId { get; set; }
-    public DateTimeOffset FinishedAt { get; set; }
+    public Guid? AdjusterId { get; set; }
+    public DateTimeOffset? FinishedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
+    public uint RowVersion { get; set; }
 }
 
 // Unidades de la demo. Sus IDs coinciden con los que usa Siniestros360.LocationSimulator (un dígito repetido 32 veces).

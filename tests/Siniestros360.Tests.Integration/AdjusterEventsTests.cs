@@ -22,7 +22,7 @@ public sealed class AdjusterEventsTests(AdjustersFactory factory) : IClassFixtur
         await Eventually.Until(() => Status(adjusterId), x => x == "Available");
 
         await factory.Deliver(new ClaimCancelled(claimId, "Cancelado por la torre de control.", now.AddSeconds(5)));
-        await Eventually.Until(() => factory.Query<AdjustersDbContext, bool>(db => db.FinishedClaims.AnyAsync(x => x.ClaimId == claimId)), x => x);
+        await Eventually.Until(() => factory.Query<AdjustersDbContext, bool>(db => db.ClaimRecords.AnyAsync(x => x.ClaimId == claimId && x.FinishedAt != null)), x => x);
         await factory.Deliver(new AdjusterAssigned(claimId, adjusterId, 0.1, now, now.AddMinutes(15)));
         await Task.Delay(1000);
 
@@ -47,6 +47,25 @@ public sealed class AdjusterEventsTests(AdjustersFactory factory) : IClassFixtur
         await Task.Delay(1000);
 
         (await Status(adjusterId)).Should().Be("Available");
+    }
+
+    // Asignación y cancelación procesadas al mismo tiempo: ninguna ve la escritura sin confirmar de la otra. Ambas escriben
+    // la fila del siniestro, chocan, y el reintento decide con lo confirmado. El ajustador nunca queda atado.
+    [Fact]
+    public async Task Assignment_and_cancellation_processed_at_the_same_time_never_tie_up_the_adjuster()
+    {
+        var adjusterId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        for (var round = 0; round < 5; round++)
+        {
+            var claimId = Guid.NewGuid();
+            var now = DateTimeOffset.UtcNow;
+            await Task.WhenAll(
+                factory.Deliver(new AdjusterAssigned(claimId, adjusterId, 0.1, now, now.AddMinutes(15))),
+                factory.Deliver(new ClaimCancelled(claimId, "Cancelado por la torre de control.", now.AddSeconds(1))));
+            await Eventually.Until(() => factory.Query<AdjustersDbContext, bool>(db => db.ClaimRecords.AnyAsync(x => x.ClaimId == claimId && x.FinishedAt != null)), x => x);
+            var settled = await Eventually.Until(() => Status(adjusterId), x => x == "Available");
+            settled.Should().Be("Available", "ronda {0}: la cancelación debe ganarle a la asignación concurrente", round);
+        }
     }
 
     private Task<string> Status(Guid adjusterId)
