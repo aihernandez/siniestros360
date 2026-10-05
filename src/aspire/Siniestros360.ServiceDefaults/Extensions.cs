@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,8 @@ using System.Text.Json.Serialization;
 using Npgsql;
 using Siniestros360.ServiceDefaults.Endpoints;
 using Siniestros360.ServiceDefaults.Middleware;
+using Siniestros360.ServiceDefaults.Time;
+using Siniestros360.SharedKernel;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -68,13 +71,24 @@ public static class Extensions
                     ?? context.HttpContext.TraceIdentifier;
             };
         });
-        builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
+        builder.Services.AddApiVersioning(options =>
+        {
+            options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            options.ReportApiVersions = true;
+        })
+        .AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'VVV";
+            options.SubstituteApiVersionInUrl = true;
+        })
+        .AddOpenApi(options => options.Document.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
         // AddValidation() no va aquí: su generador sólo descubre los tipos del ensamblado donde se llama, así que cada
         // servicio lo llama en su Program.cs. Llamarlo aquí dejaba la validación de entrada sin efecto (BUG-043).
         builder.Services.ConfigureHttpJsonOptions(options =>
             options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<IUserContext, UserContext>();
+        builder.Services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         var signingKey = builder.Configuration["Jwt:SigningKey"];
         if (string.IsNullOrWhiteSpace(signingKey) || signingKey.Length < 32)
@@ -220,7 +234,7 @@ public static class Extensions
         app.UseAuthorization();
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi().AllowAnonymous();
+            app.MapOpenApi().WithDocumentPerVersion().AllowAnonymous();
         }
 
         app.MapDefaultEndpoints();

@@ -1,3 +1,5 @@
+using Siniestros360.ServiceDefaults.Endpoints;
+using Siniestros360.SharedKernel;
 using MassTransit;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
@@ -24,61 +26,116 @@ public sealed record StatusRequest(AdjusterStatus Status);
 // bus outbox. Los PUT fijan un valor absoluto: repetirlos deja el mismo estado y no necesitan Idempotency-Key.
 public static class AdjusterEndpoints
 {
-    public static RouteGroupBuilder MapAdjusterEndpoints(this RouteGroupBuilder adjusters)
+    internal sealed class ListAdjustersEndpoint : IEndpoint
     {
-        // Consultas
-        adjusters.MapGet("/", ListAsync).RequireAuthorization(Policies.ControlTower)
-            .WithName("ListAdjusters").WithSummary("Catálogo de ajustadores");
-        adjusters.MapGet("/{id:guid}", GetAsync).RequireAuthorization(Policies.FieldOperations)
-            .WithName("GetAdjuster").WithSummary("Detalle de un ajustador")
-            .WithDescription("El ajustador sólo puede leer su propio registro; los demás responden 404.");
-
-        // Comandos
-        adjusters.MapPut("/{id:guid}/availability", SetAvailabilityAsync).RequireAuthorization(Policies.FieldOperations)
-            .WithName("SetAdjusterAvailability").WithSummary("Marcar disponible o fuera de línea")
-            .WithDescription("El ajustador sólo cambia su propia disponibilidad (403 si no). 409 si tiene un siniestro activo.");
-        adjusters.MapPut("/{id:guid}/status", SetStatusAsync).RequireAuthorization(Policies.ControlTower)
-            .WithName("SetAdjusterStatus").WithSummary("Fijar el estado operativo");
-        return adjusters;
+        public void MapEndpoint(IEndpointRouteBuilder app)
+        {
+            app.MapGet("/", ListAsync)
+                .RequireAuthorization(Policies.ControlTower)
+                .WithName("ListAdjusters")
+                .WithSummary("Catálogo de ajustadores");
+        }
     }
 
-    private static async Task<Ok<List<AdjusterResponse>>> ListAsync(AdjustersDbContext db, CancellationToken ct)
-        => TypedResults.Ok(await db.Adjusters.AsNoTracking().OrderBy(x => x.DisplayName).Select(x => AdjusterResponse.From(x)).ToListAsync(ct));
-
-    private static async Task<Results<Ok<AdjusterResponse>, NotFound>> GetAsync(Guid id, IUserContext user, AdjustersDbContext db, CancellationToken ct)
+    internal sealed class GetAdjusterEndpoint : IEndpoint
     {
-        if (!await user.CanActAsAdjusterAsync(id)) return TypedResults.NotFound();
-        var adjuster = await db.Adjusters.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct);
+        public void MapEndpoint(IEndpointRouteBuilder app)
+        {
+            app.MapGet("/{adjusterId:guid}", GetAsync)
+                .RequireAuthorization(Policies.FieldOperations)
+                .WithName("GetAdjuster")
+                .WithSummary("Detalle de un ajustador")
+                .WithDescription("El ajustador sólo puede leer su propio registro; los demás responden 404.");
+        }
+    }
+
+    internal sealed class SetAdjusterAvailabilityEndpoint : IEndpoint
+    {
+        public void MapEndpoint(IEndpointRouteBuilder app)
+        {
+            app.MapPut("/{adjusterId:guid}/availability", SetAvailabilityAsync)
+                .RequireAuthorization(Policies.FieldOperations)
+                .WithName("SetAdjusterAvailability")
+                .WithSummary("Marcar disponible o fuera de línea")
+                .WithDescription("El ajustador sólo cambia su propia disponibilidad (403 si no). 409 si tiene un siniestro activo.");
+        }
+    }
+
+    internal sealed class SetAdjusterStatusEndpoint : IEndpoint
+    {
+        public void MapEndpoint(IEndpointRouteBuilder app)
+        {
+            app.MapPut("/{adjusterId:guid}/status", SetStatusAsync)
+                .RequireAuthorization(Policies.ControlTower)
+                .WithName("SetAdjusterStatus")
+                .WithSummary("Fijar el estado operativo");
+        }
+    }
+
+    private static async Task<Ok<List<AdjusterResponse>>> ListAsync(
+        AdjustersDbContext database,
+        CancellationToken cancellationToken)
+    {
+        var adjusters = await database.Adjusters.AsNoTracking()
+            .OrderBy(x => x.DisplayName)
+            .Select(x => AdjusterResponse.From(x))
+            .ToListAsync(cancellationToken);
+
+        return TypedResults.Ok(adjusters);
+    }
+
+    private static async Task<Results<Ok<AdjusterResponse>, NotFound>> GetAsync(
+        Guid adjusterId,
+        IUserContext userContext,
+        AdjustersDbContext database,
+        CancellationToken cancellationToken)
+    {
+        if (!await userContext.CanActAsAdjusterAsync(adjusterId)) return TypedResults.NotFound();
+        var adjuster = await database.Adjusters.AsNoTracking().SingleOrDefaultAsync(x => x.Id == adjusterId, cancellationToken);
         return adjuster is null ? TypedResults.NotFound() : TypedResults.Ok(AdjusterResponse.From(adjuster));
     }
 
     private static async Task<Results<Ok<AdjusterResponse>, ForbidHttpResult, NotFound, ProblemHttpResult>> SetAvailabilityAsync(
-        Guid id, AvailabilityRequest request, HttpContext http, IUserContext user, AdjustersDbContext db, IPublishEndpoint publish, CancellationToken ct)
+        Guid adjusterId,
+        AvailabilityRequest request,
+        HttpContext httpContext,
+        IUserContext userContext,
+        AdjustersDbContext database,
+        IPublishEndpoint publisher,
+        IDateTimeProvider dateTimeProvider,
+        CancellationToken cancellationToken)
     {
-        if (!await user.CanActAsAdjusterAsync(id)) return TypedResults.Forbid();
-        var adjuster = await db.Adjusters.SingleOrDefaultAsync(x => x.Id == id, ct);
+        if (!await userContext.CanActAsAdjusterAsync(adjusterId)) return TypedResults.Forbid();
+        var adjuster = await database.Adjusters.SingleOrDefaultAsync(x => x.Id == adjusterId, cancellationToken);
         if (adjuster is null) return TypedResults.NotFound();
         if (adjuster.ActiveClaimId is not null) return TypedResults.Problem(statusCode: StatusCodes.Status409Conflict, title: "El ajustador tiene un siniestro activo.");
-        var now = DateTimeOffset.UtcNow;
+        var now = dateTimeProvider.UtcNow;
         var previous = adjuster.ChangeStatus(request.IsAvailable ? AdjusterStatus.Available : AdjusterStatus.Offline, null, now);
-        var correlation = Correlation.From(http);
-        await publish.PublishCorrelated(new AdjusterAvailabilityChanged(id, adjuster.IsAvailable, now), correlation, ct);
-        if (previous is not null) await publish.PublishCorrelated(new AdjusterStatusChanged(id, previous.Value.ToString(), adjuster.Status.ToString(), now), correlation, ct);
-        await db.SaveChangesAsync(ct);
+        var correlation = Correlation.From(httpContext);
+        await publisher.PublishCorrelated(new AdjusterAvailabilityChanged(adjusterId, adjuster.IsAvailable, now), correlation, cancellationToken);
+        if (previous is not null) await publisher.PublishCorrelated(new AdjusterStatusChanged(adjusterId, previous.Value.ToString(), adjuster.Status.ToString(), now), correlation, cancellationToken);
+        await database.SaveChangesAsync(cancellationToken);
         return TypedResults.Ok(AdjusterResponse.From(adjuster));
     }
 
-    private static async Task<Results<Ok<AdjusterResponse>, NotFound>> SetStatusAsync(Guid id, StatusRequest request, HttpContext http, AdjustersDbContext db, IPublishEndpoint publish, CancellationToken ct)
+    private static async Task<Results<Ok<AdjusterResponse>, NotFound>> SetStatusAsync(
+        Guid adjusterId,
+        StatusRequest request,
+        HttpContext httpContext,
+        AdjustersDbContext database,
+        IPublishEndpoint publisher,
+        IDateTimeProvider dateTimeProvider,
+        CancellationToken cancellationToken)
     {
-        var adjuster = await db.Adjusters.SingleOrDefaultAsync(x => x.Id == id, ct);
+        var adjuster = await database.Adjusters.SingleOrDefaultAsync(x => x.Id == adjusterId, cancellationToken);
         if (adjuster is null) return TypedResults.NotFound();
-        var now = DateTimeOffset.UtcNow;
+        var now = dateTimeProvider.UtcNow;
         var wasAvailable = adjuster.IsAvailable;
         var previous = adjuster.ChangeStatus(request.Status, adjuster.ActiveClaimId, now);
-        var correlation = Correlation.From(http);
-        if (previous is not null) await publish.PublishCorrelated(new AdjusterStatusChanged(id, previous.Value.ToString(), adjuster.Status.ToString(), now), correlation, ct);
-        if (wasAvailable != adjuster.IsAvailable) await publish.PublishCorrelated(new AdjusterAvailabilityChanged(id, adjuster.IsAvailable, now), correlation, ct);
-        await db.SaveChangesAsync(ct);
+        var correlation = Correlation.From(httpContext);
+        if (previous is not null) await publisher.PublishCorrelated(new AdjusterStatusChanged(adjusterId, previous.Value.ToString(), adjuster.Status.ToString(), now), correlation, cancellationToken);
+        if (wasAvailable != adjuster.IsAvailable) await publisher.PublishCorrelated(new AdjusterAvailabilityChanged(adjusterId, adjuster.IsAvailable, now), correlation, cancellationToken);
+        await database.SaveChangesAsync(cancellationToken);
         return TypedResults.Ok(AdjusterResponse.From(adjuster));
     }
 }

@@ -1,3 +1,4 @@
+using Siniestros360.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Siniestros360.Contracts.Events;
 using Siniestros360.LocationService.Application;
@@ -5,11 +6,11 @@ using Siniestros360.LocationService.Infrastructure;
 
 namespace Siniestros360.LocationService.Workers;
 
-public sealed class GpsStaleWorker(IServiceScopeFactory scopes, IConfiguration configuration, TimeProvider clock, ILogger<GpsStaleWorker> logger) : BackgroundService
+public sealed class GpsStaleWorker(IServiceScopeFactory scopes, IConfiguration configuration, TimeProvider timerClock, IDateTimeProvider clock, ILogger<GpsStaleWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30), clock);
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(30), timerClock);
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -32,7 +33,7 @@ public sealed class GpsStaleWorker(IServiceScopeFactory scopes, IConfiguration c
         var db = scope.ServiceProvider.GetRequiredService<LocationDbContext>();
         // El sink usa el IPublishEndpoint de este mismo scope: alerta y marca LastStaleAlertAt se confirman juntas.
         var sink = scope.ServiceProvider.GetRequiredService<ILocationEventSink>();
-        var now = clock.GetUtcNow();
+        var now = clock.UtcNow;
         var cutoff = now.AddSeconds(-configuration.GetValue("Location:StaleAfterSeconds", 120));
         var stale = await db.LatestLocations.Where(x => x.CapturedAt < cutoff && (x.LastStaleAlertAt == null || x.LastStaleAlertAt < x.CapturedAt)).ToListAsync(ct);
         foreach (var location in stale)

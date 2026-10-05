@@ -2,9 +2,10 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Siniestros360.DispatchService.Application;
 using Siniestros360.DispatchService.Domain;
-using Siniestros360.DispatchService.Endpoints;
 using Siniestros360.DispatchService.Infrastructure;
+using Siniestros360.Contracts.Common;
 using Siniestros360.Messaging.Idempotency;
+using Siniestros360.ServiceDefaults.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddSiniestrosApiDefaults();
@@ -28,15 +29,16 @@ builder.AddReliableMessaging<DispatchDbContext>("dispatch-service", bus =>
             repository.UsePostgres();
         });
 }, typeof(AdjusterLocationConsumer));
+builder.Services.AddEndpoints(typeof(Program).Assembly);
 
 var app = builder.Build();
 app.UseSiniestrosApiDefaults();
 await app.InitializeDatabaseAsync<DispatchDbContext>();
 
-app.MapGroup("/api/v1/dispatch/claims")
+app.MapEndpoints(app.MapApiVersion("dispatch/claims", ApiVersions.V1)
     .WithTags("Dispatch")
-    .WithIdempotency()
-    .MapDispatchEndpoints();
+    .RequireAuthorization(Policies.ControlTower)
+    .WithIdempotency());
 
 app.Run();
 

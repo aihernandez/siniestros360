@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Siniestros360.DocumentsService.Application;
-using Siniestros360.DocumentsService.Endpoints;
 using Siniestros360.DocumentsService.Infrastructure;
+using Siniestros360.Contracts.Common;
 using Siniestros360.DocumentsService.Infrastructure.Storage;
 using Siniestros360.Messaging.Idempotency;
+using Siniestros360.ServiceDefaults.Endpoints;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,15 +21,15 @@ builder.Services.AddScoped<IObjectStorage>(services => builder.Configuration.Get
     ? services.GetRequiredService<AzureBlobObjectStorage>()
     : ActivatorUtilities.CreateInstance<LocalObjectStorage>(services));
 builder.AddReliableMessaging<DocumentsDbContext>("documents-service", bus => bus.AddConsumer<ClaimAccessConsumer>());
+builder.Services.AddEndpoints(typeof(Program).Assembly);
 
 var app = builder.Build();
 app.UseSiniestrosApiDefaults();
 await app.InitializeDatabaseAsync<DocumentsDbContext>();
 
-app.MapGroup("/api/v1/documents")
+app.MapEndpoints(app.MapApiVersion("documents", ApiVersions.V1)
     .WithTags("Documents")
-    .WithIdempotency()
-    .MapDocumentEndpoints();
+    .WithIdempotency());
 
 app.Run();
 

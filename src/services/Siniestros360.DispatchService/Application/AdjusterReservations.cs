@@ -1,3 +1,4 @@
+using Siniestros360.SharedKernel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ public sealed record Reservation(Guid AdjusterId, double DistanceKm, DateTimeOff
 // Regla de despacho: el ajustador disponible más cercano con GPS reciente, tomado de la proyección local.
 // La reserva y su liberación (la compensación) se guardan en la misma transacción que el estado de la saga;
 // la concurrencia optimista de la proyección evita que dos sagas reserven al mismo ajustador.
-public sealed class AdjusterReservations(DispatchDbContext db, IConfiguration configuration, TimeProvider clock)
+public sealed class AdjusterReservations(DispatchDbContext db, IConfiguration configuration, IDateTimeProvider clock)
 {
     private static readonly ActivitySource ActivitySource = new("Siniestros360.DispatchService");
     private static readonly Meter Meter = new("Siniestros360.DispatchService");
@@ -24,7 +25,7 @@ public sealed class AdjusterReservations(DispatchDbContext db, IConfiguration co
     {
         using var activity = ActivitySource.StartActivity("Dispatch.AssignAdjuster");
         activity?.SetTag("siniestros360.claim_id", saga.CorrelationId);
-        var now = clock.GetUtcNow();
+        var now = clock.UtcNow;
         var freshness = now.AddSeconds(-configuration.GetValue("Dispatch:LocationFreshnessSeconds", 180));
         var candidates = await db.Adjusters
             .Where(x => x.IsAvailable && x.ReservedForClaimId == null && x.LastLocationAt >= freshness && x.Latitude != null && x.Longitude != null && x.AdjusterId != saga.AdjusterId)
@@ -60,7 +61,7 @@ public sealed class AdjusterReservations(DispatchDbContext db, IConfiguration co
         var adjuster = db.Adjusters.Local.FirstOrDefault(x => x.AdjusterId == adjusterId) ?? await db.Adjusters.SingleOrDefaultAsync(x => x.AdjusterId == adjusterId, ct);
         if (adjuster is null || adjuster.ReservedForClaimId != claimId) return;
         adjuster.IsAvailable = true; adjuster.ReservedForClaimId = null; adjuster.Version++;
-        db.Attempts.Add(new DispatchAttempt { Id = Guid.NewGuid(), ClaimId = claimId, AdjusterId = adjusterId, Result = "Released", OccurredAt = clock.GetUtcNow() });
+        db.Attempts.Add(new DispatchAttempt { Id = Guid.NewGuid(), ClaimId = claimId, AdjusterId = adjusterId, Result = "Released", OccurredAt = clock.UtcNow });
     }
 
     // Siniestros que esperan ajustador; se les pide reintentar cuando alguien se libera o reporta GPS.

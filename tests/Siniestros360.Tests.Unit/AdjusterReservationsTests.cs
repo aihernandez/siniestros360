@@ -9,7 +9,7 @@ namespace Siniestros360.Tests.Unit;
 
 public sealed class AdjusterReservationsTests
 {
-    private static readonly DateTimeOffset Now = DateTimeOffset.UtcNow;
+    private static readonly DateTimeOffset Now = new(2030, 1, 1, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
     public async Task Reserves_the_nearest_available_adjuster_with_recent_gps()
@@ -25,6 +25,7 @@ public sealed class AdjusterReservationsTests
         reservation!.AdjusterId.Should().Be(near.AdjusterId);
         near.ReservedForClaimId.Should().Be(saga.CorrelationId);
         saga.AdjusterId.Should().Be(near.AdjusterId);
+        db.Attempts.Local.Should().ContainSingle(x => x.OccurredAt == Now);
     }
 
     [Fact]
@@ -74,7 +75,7 @@ public sealed class AdjusterReservationsTests
     }
 
     private static DispatchDbContext NewDb() => new(new DbContextOptionsBuilder<DispatchDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
-    private static AdjusterReservations Reservations(DispatchDbContext db) => new(db, new ConfigurationBuilder().AddInMemoryCollection().Build(), TimeProvider.System);
+    private static AdjusterReservations Reservations(DispatchDbContext db) => new(db, new ConfigurationBuilder().AddInMemoryCollection().Build(), new FixedDateTimeProvider(Now.UtcDateTime));
     private static AdjusterDispatchProjection Adjuster(decimal latitude, decimal longitude, bool available = true, DateTimeOffset? lastGps = null)
         => new() { AdjusterId = Guid.NewGuid(), IsAvailable = available, Latitude = latitude, Longitude = longitude, LastLocationAt = lastGps ?? Now, LastLocationSequence = 1 };
     private static AssignmentState NewSaga() => new() { CorrelationId = Guid.NewGuid(), CurrentState = "Initial", IncidentLatitude = 25.6866m, IncidentLongitude = -100.3161m, StartedAt = Now, UpdatedAt = Now };

@@ -1,5 +1,6 @@
 using Siniestros360.ClaimsService.Application;
 using Siniestros360.ClaimsService.Infrastructure;
+using Siniestros360.Contracts.Common;
 using Siniestros360.Messaging.Idempotency;
 using Siniestros360.ServiceDefaults.Endpoints;
 
@@ -14,7 +15,7 @@ app.UseSiniestrosApiDefaults();
 await app.InitializeDatabaseAsync<ClaimsDbContext>();
 
 // Cada caso de uso es una clase IEndpoint en Endpoints/Claims; se descubren por reflexión y se mapean sobre el grupo.
-app.MapEndpoints(app.MapGroup("/api/v1/claims").WithTags("Claims").WithIdempotency());
+app.MapEndpoints(app.MapApiVersion("claims", ApiVersions.V1).WithTags("Claims").WithIdempotency());
 
 app.Run();
 

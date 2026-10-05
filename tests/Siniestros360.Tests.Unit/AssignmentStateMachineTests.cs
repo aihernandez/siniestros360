@@ -8,6 +8,7 @@ using Siniestros360.Contracts.Events;
 using Siniestros360.DispatchService.Application;
 using Siniestros360.DispatchService.Domain;
 using Siniestros360.DispatchService.Infrastructure;
+using Siniestros360.SharedKernel;
 
 namespace Siniestros360.Tests.Unit;
 
@@ -15,6 +16,7 @@ namespace Siniestros360.Tests.Unit;
 // Las reglas de reserva se prueban aparte; aquí se siembran ajustadores antes de publicar.
 public sealed class AssignmentStateMachineTests : IAsyncLifetime
 {
+    private static readonly DateTimeOffset Now = new(2030, 1, 1, 12, 0, 0, TimeSpan.Zero);
     private readonly string _database = Guid.NewGuid().ToString();
     private ServiceProvider _provider = null!;
     private ITestHarness _harness = null!;
@@ -25,7 +27,7 @@ public sealed class AssignmentStateMachineTests : IAsyncLifetime
         var services = new ServiceCollection();
         services.AddDbContext<DispatchDbContext>(options => options.UseInMemoryDatabase(_database));
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection().Build());
-        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<IDateTimeProvider>(new FixedDateTimeProvider(Now.UtcDateTime));
         services.AddScoped<AdjusterReservations>();
         services.AddMassTransitTestHarness(bus => bus.AddSagaStateMachine<AssignmentStateMachine, AssignmentState>().InMemoryRepository());
         _provider = services.BuildServiceProvider(true);
@@ -46,6 +48,22 @@ public sealed class AssignmentStateMachineTests : IAsyncLifetime
 
         (await _saga.Exists(claimId, x => x.Assigned)).Should().NotBeNull();
         (await _harness.Published.Any<AdjusterAssigned>(x => x.Context.Message.ClaimId == claimId)).Should().BeTrue();
+        (await _harness.Published.Any<PolicyValidationRequested>(x => x.Context.Message.ClaimId == claimId && x.Context.Message.PolicyNumber == "POL-1")).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Rejected_policy_does_not_cancel_dispatch_or_release_the_adjuster()
+    {
+        await SeedAdjuster(25.69m, -100.31m);
+        var claimId = Guid.NewGuid();
+        await _harness.Bus.Publish(Reported(claimId));
+        (await _saga.Exists(claimId, x => x.Assigned)).Should().NotBeNull();
+
+        await _harness.Bus.Publish(new PolicyValidationCompleted(claimId, "POL-1", "Rejected", "Policy inactive.", Now));
+
+        (await _saga.Consumed.Any<PolicyValidationCompleted>(x => x.Context.Message.ClaimId == claimId)).Should().BeTrue();
+        (await _saga.Exists(claimId, x => x.Assigned)).Should().NotBeNull();
+        (await _harness.Published.Any<ClaimCancelled>(x => x.Context.Message.ClaimId == claimId)).Should().BeFalse();
     }
 
     [Fact]
@@ -54,7 +72,7 @@ public sealed class AssignmentStateMachineTests : IAsyncLifetime
         var claimId = Guid.NewGuid();
         await _harness.Bus.Publish(Reported(claimId));
         (await _saga.Exists(claimId, x => x.Unavailable)).Should().NotBeNull();
-        (await _harness.Published.Any<NoAdjusterAvailable>(x => x.Context.Message.ClaimId == claimId)).Should().BeTrue();
+        (await _harness.Published.Any<NoAdjusterAvailable>(x => x.Context.Message.ClaimId == claimId && x.Context.Message.OccurredAt == Now)).Should().BeTrue();
 
         await SeedAdjuster(25.69m, -100.31m);
         await _harness.Bus.Publish(new RetryAssignment(claimId));
@@ -72,14 +90,14 @@ public sealed class AssignmentStateMachineTests : IAsyncLifetime
         await _harness.Bus.Publish(Reported(reassigned));
         (await _saga.Exists(reassigned, x => x.Assigned)).Should().NotBeNull();
 
-        await _harness.Bus.Publish(new SlaBreached(reassigned, "WaitingArrival", "Arrival SLA exceeded.", DateTimeOffset.UtcNow));
+        await _harness.Bus.Publish(new SlaBreached(reassigned, "WaitingArrival", "Arrival SLA exceeded.", Now));
         (await _harness.Published.Any<ClaimReassigned>(x => x.Context.Message.ClaimId == reassigned)).Should().BeTrue();
 
         await _harness.Bus.Publish(Reported(onSite));
         (await _saga.Exists(onSite, x => x.Assigned)).Should().NotBeNull();
-        await _harness.Bus.Publish(new AdjusterArrived(onSite, Guid.NewGuid(), DateTimeOffset.UtcNow));
+        await _harness.Bus.Publish(new AdjusterArrived(onSite, Guid.NewGuid(), Now));
         (await _saga.Exists(onSite, x => x.OnSite)).Should().NotBeNull();
-        await _harness.Bus.Publish(new SlaBreached(onSite, "WaitingArrival", "late event", DateTimeOffset.UtcNow));
+        await _harness.Bus.Publish(new SlaBreached(onSite, "WaitingArrival", "late event", Now));
         (await _harness.Consumed.Any<SlaBreached>(x => x.Context.Message.ClaimId == onSite)).Should().BeTrue();
         (await _harness.Published.Any<ClaimReassigned>(x => x.Context.Message.ClaimId == onSite)).Should().BeFalse();
     }
@@ -92,7 +110,7 @@ public sealed class AssignmentStateMachineTests : IAsyncLifetime
         await _harness.Bus.Publish(Reported(claimId));
         (await _saga.Exists(claimId, x => x.Assigned)).Should().NotBeNull();
 
-        await _harness.Bus.Publish(new ClaimCancelled(claimId, "Cancelled by insured.", DateTimeOffset.UtcNow));
+        await _harness.Bus.Publish(new ClaimCancelled(claimId, "Cancelled by insured.", Now));
 
         (await _saga.Exists(claimId, x => x.Cancelled)).Should().NotBeNull();
     }
@@ -101,9 +119,9 @@ public sealed class AssignmentStateMachineTests : IAsyncLifetime
     {
         await using var scope = _provider.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<DispatchDbContext>();
-        db.Adjusters.Add(new AdjusterDispatchProjection { AdjusterId = Guid.NewGuid(), IsAvailable = true, Latitude = latitude, Longitude = longitude, LastLocationAt = DateTimeOffset.UtcNow, LastLocationSequence = 1, Version = 1 });
+        db.Adjusters.Add(new AdjusterDispatchProjection { AdjusterId = Guid.NewGuid(), IsAvailable = true, Latitude = latitude, Longitude = longitude, LastLocationAt = Now, LastLocationSequence = 1, Version = 1 });
         await db.SaveChangesAsync();
     }
 
-    private static ClaimReported Reported(Guid claimId) => new(claimId, "insured-a", "SIN-1", "POL-1", "ABC-123", "Collision", 25.6866m, -100.3161m, false, DateTimeOffset.UtcNow);
+    private static ClaimReported Reported(Guid claimId) => new(claimId, "insured-a", "SIN-1", "POL-1", "ABC-123", "Collision", 25.6866m, -100.3161m, false, Now);
 }

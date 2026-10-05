@@ -22,6 +22,7 @@ public sealed class DispatchDbContext(DbContextOptions<DispatchDbContext> option
         saga.HasKey(x => x.CorrelationId);
         saga.Property(x => x.CorrelationId).HasColumnName("ClaimId").ValueGeneratedNever();
         saga.Property(x => x.CurrentState).HasColumnName("Status").HasMaxLength(32);
+        saga.Property(x => x.CoverageStatus).HasMaxLength(32);
         saga.Property(x => x.RowVersion).IsRowVersion();
         saga.HasIndex(x => x.CurrentState);
 

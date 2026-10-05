@@ -11,5 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Siniestros360.Contracts\Siniestros360.Contracts.csproj" />
+    <ProjectReference Include="..\Siniestros360.SharedKernel\Siniestros360.SharedKernel.csproj" />
   </ItemGroup>
 </Project>

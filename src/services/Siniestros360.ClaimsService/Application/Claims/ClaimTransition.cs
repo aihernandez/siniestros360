@@ -10,7 +10,7 @@ namespace Siniestros360.ClaimsService.Application.Claims;
 // (si no, NotFound, para no revelar el siniestro); el dominio decide si la transición es legal; el evento de la transición
 // sale por el outbox junto con ClaimStatusChanged y, al cerrar, ClaimClosed. Lo comparten por composición, no por herencia.
 // TODO(2026-10-05): pruebas unitarias de los handlers de Claims (Report, transiciones, consultas) con IUserContext sustituido y DbContext en memoria — y la de que el filtro de publicación pone la correlación (sin PublishCorrelated) leyendo el outbox sin entrega.
-internal sealed class ClaimTransition(ClaimsDbContext db, IUserContext user, IPublishEndpoint publish, TimeProvider clock)
+internal sealed class ClaimTransition(ClaimsDbContext db, IUserContext user, IPublishEndpoint publish, IDateTimeProvider clock)
 {
     public async Task<Result<ClaimResponse>> ApplyAsync(Guid claimId, Func<Claim, DateTimeOffset, Result<object>> transition, CancellationToken ct)
     {
@@ -18,7 +18,7 @@ internal sealed class ClaimTransition(ClaimsDbContext db, IUserContext user, IPu
         if (claim is null || !await user.CanAccessClaimAsync(claim.Participants())) return ClaimErrors.NotFound(claimId);
 
         var previousStatus = claim.Status;
-        var result = transition(claim, clock.GetUtcNow());
+        var result = transition(claim, clock.UtcNow);
         if (result.IsFailure) return result.Error;
 
         await publish.Publish(result.Value, ct);

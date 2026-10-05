@@ -19,19 +19,27 @@ public static class EndpointExtensions
 {
     public static IServiceCollection AddEndpoints(this IServiceCollection services, Assembly assembly)
     {
-        var endpoints = assembly.DefinedTypes
+        ServiceDescriptor[] endpointDescriptors = assembly.DefinedTypes
             .Where(type => type is { IsAbstract: false, IsInterface: false } && type.IsAssignableTo(typeof(IEndpoint)))
+            .OrderBy(type => type.FullName, StringComparer.Ordinal)
             .Select(type => ServiceDescriptor.Transient(typeof(IEndpoint), type))
             .ToArray();
-        services.TryAddEnumerable(endpoints);
+        services.TryAddEnumerable(endpointDescriptors);
         return services;
     }
 
-    // Mapea todos los endpoints del servicio sobre su grupo (prefijo, tag, idempotencia y autorización del grupo).
-    public static RouteGroupBuilder MapEndpoints(this WebApplication app, RouteGroupBuilder group)
+    // Mapea los endpoints sobre la aplicación o un grupo con prefijo y convenciones compartidas.
+    public static WebApplication MapEndpoints(this WebApplication app, RouteGroupBuilder? group = null)
     {
-        foreach (var endpoint in app.Services.GetRequiredService<IEnumerable<IEndpoint>>()) endpoint.MapEndpoint(group);
-        return group;
+        IEnumerable<IEndpoint> endpoints = app.Services.GetRequiredService<IEnumerable<IEndpoint>>();
+        IEndpointRouteBuilder routeBuilder = group is null ? app : group;
+
+        foreach (IEndpoint endpoint in endpoints)
+        {
+            endpoint.MapEndpoint(routeBuilder);
+        }
+
+        return app;
     }
 }
 

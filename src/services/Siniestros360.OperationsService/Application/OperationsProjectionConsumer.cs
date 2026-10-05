@@ -1,3 +1,4 @@
+using Siniestros360.SharedKernel;
 using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ namespace Siniestros360.OperationsService.Application;
 // Los duplicados los descarta la inbox del consumer outbox; los eventos fuera de orden se resuelven con versión o secuencia.
 // La notificación sale tras SaveChanges pero antes del commit del consumer outbox: si el commit falla, el mensaje se
 // reentrega y la vista se vuelve a empujar. Las vistas son la fuente de verdad; SignalR sólo avisa.
-public sealed class OperationsProjectionConsumer(OperationsDbContext db, IHubContext<OperationsHub> hub) :
+public sealed class OperationsProjectionConsumer(OperationsDbContext db, IHubContext<OperationsHub> hub, IDateTimeProvider clock) :
     IConsumer<ClaimReported>,
     IConsumer<ClaimStatusChanged>,
     IConsumer<ClaimCancelled>,
@@ -241,7 +242,7 @@ public sealed class OperationsProjectionConsumer(OperationsDbContext db, IHubCon
     {
         var claim = db.Claims.Local.FirstOrDefault(x => x.ClaimId == claimId) ?? await db.Claims.SingleOrDefaultAsync(x => x.ClaimId == claimId, ct);
         if (claim is not null) return claim;
-        claim = new ClaimReadModel { ClaimId = claimId, UpdatedAt = DateTimeOffset.UtcNow };
+        claim = new ClaimReadModel { ClaimId = claimId, UpdatedAt = clock.UtcNow };
         db.Claims.Add(claim);
         return claim;
     }

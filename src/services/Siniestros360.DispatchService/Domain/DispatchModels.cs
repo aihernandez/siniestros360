@@ -14,6 +14,10 @@ public sealed class AssignmentState : SagaStateMachineInstance
     public double? DistanceKm { get; set; }
     public DateTimeOffset StartedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+    // Null identifica las sagas anteriores a la orquestación de póliza.
+    public string? CoverageStatus { get; set; }
+    public string? CoverageReason { get; set; }
+    public DateTimeOffset? CoverageUpdatedAt { get; set; }
     // xmin de PostgreSQL: concurrencia optimista sin columna propia.
     public uint RowVersion { get; set; }
 }

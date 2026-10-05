@@ -2,8 +2,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Siniestros360.IdentityService.Application;
 using Siniestros360.IdentityService.Domain;
-using Siniestros360.IdentityService.Endpoints;
 using Siniestros360.IdentityService.Infrastructure;
+using Siniestros360.Contracts.Common;
+using Siniestros360.ServiceDefaults.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddSiniestrosApiDefaults();
@@ -23,7 +24,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<IdentityData>();
 builder.Services.AddScoped<TokenService>();
-builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddEndpoints(typeof(Program).Assembly);
 
 var app = builder.Build();
 app.UseSiniestrosApiDefaults();
@@ -33,9 +34,7 @@ using (var scope = app.Services.CreateScope())
     await IdentitySeed.InitializeAsync(scope.ServiceProvider);
 }
 
-app.MapGroup("/api/v1/auth")
-    .WithTags("Authentication")
-    .MapAuthEndpoints();
+app.MapEndpoints(app.MapApiVersion("auth", ApiVersions.V1).WithTags("Authentication"));
 
 app.Run();
 

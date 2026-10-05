@@ -101,10 +101,11 @@ public sealed class Claim
 
     public void SetCoverage(string status, string? reason, DateTimeOffset at)
     {
-        if (IsFinished) return;
+        // Policy puede responder después del cierre o la cancelación; la cobertura se registra sin reabrir el caso.
+        if (CoverageStatus != "Pending") return;
         CoverageStatus = status;
         CoverageReason = reason;
-        UpdatedAt = at;
+        if (at > UpdatedAt) UpdatedAt = at;
         Version++;
         Timeline.Add(NewTimeline("policy.validated", reason ?? status, at));
     }

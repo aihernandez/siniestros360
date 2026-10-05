@@ -120,6 +120,24 @@ public sealed class ClaimsApiTests(ClaimsFactory factory) : IClassFixture<Claims
     }
 
     [Fact]
+    public async Task Policy_result_after_cancellation_is_recorded_without_reopening_the_claim()
+    {
+        var claimId = await Create("insured-late-policy");
+        var client = factory.ClientFor("insured-late-policy", "insured");
+        using var cancelled = await client.SendAsync(Requests.Post($"/api/v1/claims/{claimId}/cancel", idempotencyKey: Requests.NewKey()));
+        cancelled.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await factory.Deliver(new PolicyValidationCompleted(claimId, "POL-insured-late-policy", "Active", null, DateTimeOffset.UtcNow));
+
+        var claim = await Eventually.Until(() => factory.Query<ClaimsDbContext, (string Coverage, string Status)>(async db =>
+        {
+            var record = await db.Claims.SingleAsync(x => x.Id == claimId);
+            return (record.CoverageStatus, record.Status.ToString());
+        }), result => result.Coverage == "Active");
+        claim.Status.Should().Be("Cancelled");
+    }
+
+    [Fact]
     public async Task A_rejected_command_releases_its_key()
     {
         var claimId = await Create("insured-reject");

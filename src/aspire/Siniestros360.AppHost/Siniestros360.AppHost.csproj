@@ -1,6 +1,7 @@
 <Project Sdk="Aspire.AppHost.Sdk/13.5.4">
 
   <ItemGroup>
+    <ProjectReference Include="..\..\shared\Siniestros360.Contracts\Siniestros360.Contracts.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\..\services\Siniestros360.AdjustersService\Siniestros360.AdjustersService.csproj" />
     <ProjectReference Include="..\..\services\Siniestros360.ClaimsService\Siniestros360.ClaimsService.csproj" />
     <ProjectReference Include="..\..\services\Siniestros360.DispatchService\Siniestros360.DispatchService.csproj" />

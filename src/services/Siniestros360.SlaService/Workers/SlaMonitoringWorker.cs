@@ -1,3 +1,4 @@
+using Siniestros360.SharedKernel;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Siniestros360.Contracts.Events;
@@ -10,11 +11,11 @@ namespace Siniestros360.SlaService.Workers;
 
 // Revisa cada 10 s las etapas activas: al WarningRatio del plazo avisa y al vencer publica breach y escalación,
 // una sola vez por etapa (índice único de SlaAlert).
-public sealed class SlaMonitoringWorker(IServiceScopeFactory scopes, TimeProvider clock, ILogger<SlaMonitoringWorker> logger) : BackgroundService
+public sealed class SlaMonitoringWorker(IServiceScopeFactory scopes, TimeProvider timerClock, IDateTimeProvider clock, ILogger<SlaMonitoringWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10), clock);
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10), timerClock);
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -38,7 +39,7 @@ public sealed class SlaMonitoringWorker(IServiceScopeFactory scopes, TimeProvide
         var policy = scope.ServiceProvider.GetRequiredService<SlaPolicy>();
         // IPublishEndpoint del mismo scope: alertas y eventos se confirman con el mismo SaveChanges (bus outbox).
         var publish = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
-        var now = clock.GetUtcNow();
+        var now = clock.UtcNow;
         var active = await db.Trackings.Where(x => x.Status != SlaTrackingStatus.Closed && x.Status != SlaTrackingStatus.Cancelled && x.StageDueAt != null).ToListAsync(ct);
         foreach (var item in active)
         {

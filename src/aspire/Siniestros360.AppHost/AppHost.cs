@@ -1,4 +1,5 @@
 using Aspire.Hosting.ApplicationModel;
+using Siniestros360.Contracts.Common;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -42,8 +43,8 @@ var gatewayUrl = gateway.GetEndpoint("http");
 
 builder.AddProject<Projects.Siniestros360_LocationSimulator>("location-simulator")
     .WithEnvironment("Simulator__Forwarding__Enabled", "true")
-    .WithEnvironment("Simulator__Forwarding__Endpoint", ReferenceExpression.Create($"{gatewayUrl}/api/v1/locations/batch"))
-    .WithEnvironment("Simulator__Forwarding__LoginEndpoint", ReferenceExpression.Create($"{gatewayUrl}/api/v1/auth/login"))
+    .WithEnvironment("Simulator__Forwarding__Endpoint", ReferenceExpression.Create($"{gatewayUrl}{ApiVersions.V1Path("locations/batch")}"))
+    .WithEnvironment("Simulator__Forwarding__LoginEndpoint", ReferenceExpression.Create($"{gatewayUrl}{ApiVersions.V1Path("auth/login")}"))
     .WaitFor(gateway).WaitFor(adjusters).WaitFor(locations);
 
 // Las apps llaman rutas relativas y el proxy de Vite las reenvía al gateway, así el navegador no necesita CORS.

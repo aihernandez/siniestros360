@@ -1,3 +1,4 @@
+using Siniestros360.SharedKernel;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,12 +17,12 @@ public sealed class TokenService(
     IConfiguration configuration,
     IdentityData db,
     UserManager<ApplicationUser> userManager,
-    TimeProvider timeProvider)
+    IDateTimeProvider timeProvider)
 {
     public async Task<TokenResponse> IssueAsync(ApplicationUser user, CancellationToken cancellationToken)
     {
         var roles = await userManager.GetRolesAsync(user);
-        var now = timeProvider.GetUtcNow();
+        var now = timeProvider.UtcNow;
         var expires = now.AddMinutes(configuration.GetValue("Jwt:AccessTokenMinutes", 30));
         var claims = new List<Claim>
         {
@@ -38,8 +39,8 @@ public sealed class TokenService(
             configuration["Jwt:Issuer"] ?? "Siniestros360.Identity",
             configuration["Jwt:Audience"] ?? "Siniestros360",
             claims,
-            now.UtcDateTime,
-            expires.UtcDateTime,
+            now,
+            expires,
             new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
         var refreshPlainText = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
@@ -59,8 +60,8 @@ public sealed class TokenService(
     {
         var hash = Hash(refreshToken);
         var stored = await db.RefreshTokens.SingleOrDefaultAsync(x => x.TokenHash == hash, cancellationToken);
-        if (stored is null || stored.RevokedAt is not null || stored.ExpiresAt <= timeProvider.GetUtcNow()) return null;
-        stored.RevokedAt = timeProvider.GetUtcNow();
+        if (stored is null || stored.RevokedAt is not null || stored.ExpiresAt <= timeProvider.UtcNow) return null;
+        stored.RevokedAt = timeProvider.UtcNow;
         var user = await userManager.FindByIdAsync(stored.UserId.ToString());
         return user is null ? null : await IssueAsync(user, cancellationToken);
     }

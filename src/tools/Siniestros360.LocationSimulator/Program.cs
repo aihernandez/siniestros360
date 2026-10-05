@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Asp.Versioning;
+using Siniestros360.Contracts.Common;
 using Siniestros360.LocationSimulator.Hubs;
 using Siniestros360.LocationSimulator.Options;
 using Siniestros360.LocationSimulator.Publishing;
@@ -46,6 +48,17 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 }));
 
 builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
+builder.Services.AddApiVersioning(options =>
+{
+    options.ApiVersionReader = new UrlSegmentApiVersionReader();
+    options.ReportApiVersions = true;
+})
+.AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+})
+.AddOpenApi();
 builder.Services.AddSingleton<RouteCatalog>();
 builder.Services.AddSingleton<SimulationStateStore>();
 builder.Services.AddHttpClient(LocationPublisher.HttpClientName);
@@ -55,14 +68,18 @@ builder.Services.AddHostedService<LocationSimulationWorker>();
 var app = builder.Build();
 
 app.UseCors();
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi().WithDocumentPerVersion();
+}
 
 app.MapGet("/", () => Results.Ok(new
 {
     service = "Siniestros360 Location Simulator",
     endpoints = new
     {
-        adjusters = "/api/simulator/adjusters",
-        status = "/api/simulator/status",
+        adjusters = ApiVersions.V1Path("simulator/adjusters"),
+        status = ApiVersions.V1Path("simulator/status"),
         hub = "/hubs/locations"
     }
 }));
@@ -73,7 +90,9 @@ app.MapGet("/health", () => Results.Ok(new
     checkedAt = DateTimeOffset.UtcNow
 }));
 
-var simulator = app.MapGroup("/api/simulator");
+var simulator = app.NewVersionedApi()
+    .MapGroup("/api/v{version:apiVersion}/simulator")
+    .HasApiVersion(new ApiVersion(ApiVersions.V1, 0));
 
 simulator.MapGet("/status", (SimulationStateStore store) => Results.Ok(new
 {

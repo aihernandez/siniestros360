@@ -1,12 +1,14 @@
+using Siniestros360.SharedKernel;
 using System.Diagnostics.Metrics;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Siniestros360.AdjustersService.Application;
 using Siniestros360.AdjustersService.Domain;
-using Siniestros360.AdjustersService.Endpoints;
 using Siniestros360.AdjustersService.Infrastructure;
+using Siniestros360.Contracts.Common;
 using Siniestros360.Contracts.Events;
 using Siniestros360.Messaging;
+using Siniestros360.ServiceDefaults.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddSiniestrosApiDefaults();
@@ -18,6 +20,7 @@ builder.Services.AddDbContext<AdjustersDbContext>(options =>
     if (string.IsNullOrWhiteSpace(connection)) options.UseInMemoryDatabase("adjusters-development"); else options.UseNpgsql(connection);
 });
 builder.AddReliableMessaging<AdjustersDbContext>("adjusters-service", bus => bus.AddConsumer<AdjusterEventsConsumer>());
+builder.Services.AddEndpoints(typeof(Program).Assembly);
 
 var meter = new Meter("Siniestros360.AdjustersService");
 var app = builder.Build();
@@ -31,9 +34,7 @@ meter.CreateObservableGauge("adjusters.available.count", () =>
     return scope.ServiceProvider.GetRequiredService<AdjustersDbContext>().Adjusters.Count(x => x.IsAvailable);
 });
 
-app.MapGroup("/api/v1/adjusters")
-    .WithTags("Adjusters")
-    .MapAdjusterEndpoints();
+app.MapEndpoints(app.MapApiVersion("adjusters", ApiVersions.V1).WithTags("Adjusters"));
 
 app.Run();
 
@@ -43,7 +44,7 @@ static async Task SeedDemoAdjusters(WebApplication app)
     await using var scope = app.Services.CreateAsyncScope();
     var db = scope.ServiceProvider.GetRequiredService<AdjustersDbContext>();
     var publish = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
-    var now = DateTimeOffset.UtcNow;
+    var now = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>().UtcNow;
     foreach (var (id, displayName) in DemoAdjusters.All)
     {
         if (await db.Adjusters.AnyAsync(x => x.Id == id)) continue;

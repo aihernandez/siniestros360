@@ -7,5 +7,8 @@
     <ProjectReference Include="..\..\src\services\Siniestros360.DocumentsService\Siniestros360.DocumentsService.csproj" Aliases="documents" />
     <ProjectReference Include="..\..\src\services\Siniestros360.OperationsService\Siniestros360.OperationsService.csproj" Aliases="operations" />
     <ProjectReference Include="..\..\src\services\Siniestros360.DispatchService\Siniestros360.DispatchService.csproj" Aliases="dispatch" />
+    <ProjectReference Include="..\..\src\services\Siniestros360.IdentityService\Siniestros360.IdentityService.csproj" Aliases="identity" />
+    <ProjectReference Include="..\..\src\services\Siniestros360.LocationService\Siniestros360.LocationService.csproj" Aliases="location" />
+    <ProjectReference Include="..\..\src\gateway\Siniestros360.Gateway\Siniestros360.Gateway.csproj" Aliases="gateway" />
   </ItemGroup>
 </Project>

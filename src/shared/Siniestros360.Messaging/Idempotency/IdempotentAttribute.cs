@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Siniestros360.Messaging.Persistence;
+using Siniestros360.SharedKernel;
 
 namespace Siniestros360.Messaging.Idempotency;
 
@@ -82,7 +83,7 @@ internal sealed class IdempotencyFilter(IdempotentAttribute attribute, int[] req
             : null;
         try
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = http.RequestServices.GetRequiredService<IDateTimeProvider>().UtcNow;
             await store.IdempotencyRecords.Where(x => x.UserId == userId && x.Key == key && x.ExpiresAt <= now).ExecuteDeleteIfRelationalAsync(db, ct);
             var reservation = new IdempotencyRecord { Id = Guid.NewGuid(), UserId = userId, Key = key, RequestHash = hash, StatusCode = 0, ResponseBody = "", CreatedAt = now, ExpiresAt = now.Add(attribute.Expiration) };
             store.IdempotencyRecords.Add(reservation);
@@ -120,7 +121,7 @@ internal sealed class IdempotencyFilter(IdempotentAttribute attribute, int[] req
 
     private static async Task<IResult?> Replay(IReliableMessagingDbContext store, string userId, string key, string hash, HttpContext http, CancellationToken ct)
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = http.RequestServices.GetRequiredService<IDateTimeProvider>().UtcNow;
         var existing = await store.IdempotencyRecords.AsNoTracking().SingleOrDefaultAsync(x => x.UserId == userId && x.Key == key && x.ExpiresAt > now, ct);
         if (existing is null) return null;
         if (!CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(existing.RequestHash), Encoding.UTF8.GetBytes(hash)))

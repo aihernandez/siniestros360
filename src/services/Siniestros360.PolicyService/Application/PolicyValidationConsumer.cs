@@ -1,3 +1,4 @@
+using Siniestros360.SharedKernel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using MassTransit;
@@ -9,7 +10,7 @@ namespace Siniestros360.PolicyService.Application;
 
 // El resultado nunca bloquea el alta del siniestro: si el proveedor no responde tras retry y circuit breaker
 // se publica PolicyValidationUnavailable como fallback explícito, no una cobertura inventada.
-public sealed class PolicyValidationConsumer(PolicyDbContext db, IPolicyProviderClient client) : IConsumer<PolicyValidationRequested>
+public sealed class PolicyValidationConsumer(PolicyDbContext db, IPolicyProviderClient client, IDateTimeProvider clock) : IConsumer<PolicyValidationRequested>
 {
     private static readonly ActivitySource ActivitySource = new("Siniestros360.PolicyService");
     private static readonly Meter Meter = new("Siniestros360.PolicyService");
@@ -22,7 +23,7 @@ public sealed class PolicyValidationConsumer(PolicyDbContext db, IPolicyProvider
         var ct = context.CancellationToken;
         using var activity = ActivitySource.StartActivity("Policy.Validate");
         activity?.SetTag("siniestros360.claim_id", e.ClaimId);
-        var now = DateTimeOffset.UtcNow;
+        var now = clock.UtcNow;
         try
         {
             var result = await client.ValidateAsync(e.PolicyNumber, ct);

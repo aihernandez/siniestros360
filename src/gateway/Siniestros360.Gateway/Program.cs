@@ -5,11 +5,18 @@ builder.AddSiniestrosApiDefaults();
 
 builder.Services.AddGatewayRateLimiting(builder.Configuration);
 
-// Orígenes de las apps empaquetadas con Capacitor. En desarrollo web las apps usan el proxy de Vite y no necesitan CORS.
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
-builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithExposedHeaders("X-Correlation-ID", "Idempotent-Replayed")));
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
+.WithOrigins(allowedOrigins)
+.AllowAnyHeader()
+.AllowAnyMethod()
+.AllowCredentials()
+.WithExposedHeaders("X-Correlation-ID", "Idempotent-Replayed")));
 
-builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy")).AddServiceDiscoveryDestinationResolver();
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddServiceDiscoveryDestinationResolver();
+
 var app = builder.Build();
 app.UseCors();
 app.UseSiniestrosApiDefaults();

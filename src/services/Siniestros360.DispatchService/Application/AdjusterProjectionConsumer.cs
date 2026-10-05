@@ -1,3 +1,4 @@
+using Siniestros360.SharedKernel;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Siniestros360.Contracts.Events;
@@ -8,7 +9,7 @@ namespace Siniestros360.DispatchService.Application;
 
 // Proyección local de disponibilidad y GPS: Dispatch decide sin consultar las bases de Adjusters ni de Location.
 // Cuando un ajustador queda elegible, pide a las sagas en espera que reintenten la asignación.
-public sealed class AdjusterProjectionConsumer(DispatchDbContext db, AdjusterReservations reservations, IConfiguration configuration, TimeProvider clock) :
+public sealed class AdjusterProjectionConsumer(DispatchDbContext db, AdjusterReservations reservations, IConfiguration configuration, IDateTimeProvider clock) :
     AdjusterProjection(db, reservations, configuration, clock),
     IConsumer<AdjusterRegistered>,
     IConsumer<AdjusterAvailabilityChanged>
@@ -30,7 +31,7 @@ public sealed class AdjusterProjectionConsumer(DispatchDbContext db, AdjusterRes
 
 // GPS en la cola de telemetría de Dispatch. Version es token de concurrencia: dos posiciones del mismo ajustador
 // procesadas a la vez chocan, y el reintento descarta la más antigua por CapturedAt.
-public sealed class AdjusterLocationConsumer(DispatchDbContext db, AdjusterReservations reservations, IConfiguration configuration, TimeProvider clock) :
+public sealed class AdjusterLocationConsumer(DispatchDbContext db, AdjusterReservations reservations, IConfiguration configuration, IDateTimeProvider clock) :
     AdjusterProjection(db, reservations, configuration, clock),
     IConsumer<AdjusterLocationUpdated>
 {
@@ -48,14 +49,14 @@ public sealed class AdjusterLocationConsumer(DispatchDbContext db, AdjusterReser
     }
 }
 
-public abstract class AdjusterProjection(DispatchDbContext db, AdjusterReservations reservations, IConfiguration configuration, TimeProvider clock)
+public abstract class AdjusterProjection(DispatchDbContext db, AdjusterReservations reservations, IConfiguration configuration, IDateTimeProvider clock)
 {
     protected DispatchDbContext Db { get; } = db;
 
     // Sólo un ajustador libre con GPS reciente dispara reintentos; así el GPS de unidades ocupadas no genera tráfico.
     protected async Task RetryWaitingClaims(ConsumeContext context, AdjusterDispatchProjection projection)
     {
-        var freshness = clock.GetUtcNow().AddSeconds(-configuration.GetValue("Dispatch:LocationFreshnessSeconds", 180));
+        var freshness = clock.UtcNow.AddSeconds(-configuration.GetValue("Dispatch:LocationFreshnessSeconds", 180));
         if (!projection.IsAvailable || projection.ReservedForClaimId is not null || projection.LastLocationAt < freshness) return;
         foreach (var claimId in await reservations.WaitingClaims(context.CancellationToken))
         {

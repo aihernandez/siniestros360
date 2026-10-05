@@ -35,6 +35,53 @@ public sealed class DispatchSagaTests : IAsyncLifetime
         await factory.Deliver(new ClaimCancelled(claimId, "Cancelled by insured.", DateTimeOffset.UtcNow));
         var cancelled = await Saga(claimId, status => status == "Cancelled");
         cancelled.GetProperty("attempts").EnumerateArray().Select(x => x.GetProperty("result").GetString()).Should().Contain(["Assigned", "Released"]);
+
+        await factory.Deliver(new PolicyValidationCompleted(claimId, "POL-1", "Active", null, DateTimeOffset.UtcNow));
+        var validated = await Saga(claimId, status => status == "Cancelled", saga => saga.GetProperty("coverageStatus").GetString() == "Active");
+        validated.GetProperty("adjusterId").GetGuid().Should().Be(adjusterId);
+    }
+
+    [Theory]
+    [InlineData("Active")]
+    [InlineData("Rejected")]
+    [InlineData("Failed")]
+    [InlineData("Unavailable")]
+    public async Task Policy_result_is_recorded_while_dispatch_remains_assigned(string coverageStatus)
+    {
+        var adjusterId = await AvailableAdjuster(25.6870m, -100.3165m);
+        var claimId = Guid.NewGuid();
+        await factory.Deliver(Reported(claimId, 25.6866m, -100.3161m));
+
+        var pending = await Saga(claimId, status => status == "Assigned");
+        pending.GetProperty("adjusterId").GetGuid().Should().Be(adjusterId);
+        pending.GetProperty("coverageStatus").GetString().Should().Be("Pending");
+
+        var now = DateTimeOffset.UtcNow;
+        switch (coverageStatus)
+        {
+            case "Active":
+            case "Rejected":
+                await factory.Deliver(new PolicyValidationCompleted(claimId, "POL-1", coverageStatus, "Policy checked.", now));
+                break;
+            case "Failed":
+                await factory.Deliver(new PolicyValidationFailed(claimId, "POL-1", "Provider400", "Provider rejected request.", now));
+                break;
+            default:
+                await factory.Deliver(new PolicyValidationUnavailable(claimId, "POL-1", "Provider timed out.", now));
+                break;
+        }
+
+        var result = await Saga(claimId, status => status == "Assigned", saga => saga.GetProperty("coverageStatus").GetString() == coverageStatus);
+        result.GetProperty("adjusterId").GetGuid().Should().Be(adjusterId);
+        result.GetProperty("coverageReason").GetString().Should().Be(coverageStatus switch
+        {
+            "Failed" => "Provider rejected request.",
+            "Unavailable" => "Provider timed out.",
+            _ => "Policy checked."
+        });
+        result.GetProperty("coverageUpdatedAt").GetDateTimeOffset().Should().BeCloseTo(now, TimeSpan.FromMilliseconds(1));
+        result.GetProperty("attempts").EnumerateArray().Select(x => x.GetProperty("result").GetString()).Should().ContainSingle("Assigned");
+        (await factory.Query<DispatchDbContext, Guid?>(db => db.Adjusters.Where(x => x.AdjusterId == adjusterId).Select(x => x.ReservedForClaimId).SingleAsync())).Should().Be(claimId);
     }
 
     [Fact]

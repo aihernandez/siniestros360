@@ -1,3 +1,5 @@
+using Siniestros360.ServiceDefaults.Endpoints;
+using Siniestros360.SharedKernel;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -10,26 +12,34 @@ namespace Siniestros360.OperationsService.Endpoints;
 // El único comando de Operations: atender una alerta. No cambia el estado de otro servicio.
 public static class AlertCommands
 {
-    public static RouteGroupBuilder MapAlertCommands(this RouteGroupBuilder operations)
+    internal sealed class AcknowledgeAlertEndpoint : IEndpoint
     {
-        operations.MapPost("/alerts/{id:guid}/acknowledge", AcknowledgeAsync)
-            .RequireAuthorization(Policies.ControlTower)
-            .WithName("AcknowledgeAlert")
-            .WithSummary("Atender una alerta")
-            .WithDescription("Idempotente: repetirlo devuelve la misma alerta con la primera fecha de atención.");
-        return operations;
+        public void MapEndpoint(IEndpointRouteBuilder app)
+        {
+            app.MapPost("/alerts/{alertId:guid}/acknowledge", AcknowledgeAsync)
+                .RequireAuthorization(Policies.ControlTower)
+                .WithName("AcknowledgeAlert")
+                .WithSummary("Atender una alerta")
+                .WithDescription("Idempotente: repetirlo devuelve la misma alerta con la primera fecha de atención.");
+        }
     }
 
-    private static async Task<Results<Ok<AlertView>, NotFound>> AcknowledgeAsync(Guid id, IUserContext user, OperationsDbContext db, IHubContext<OperationsHub> hub, CancellationToken ct)
+    private static async Task<Results<Ok<AlertView>, NotFound>> AcknowledgeAsync(
+        Guid alertId,
+        IUserContext userContext,
+        OperationsDbContext database,
+        IHubContext<OperationsHub> hubContext,
+        IDateTimeProvider dateTimeProvider,
+        CancellationToken cancellationToken)
     {
-        var alert = await db.Alerts.SingleOrDefaultAsync(x => x.Id == id, ct);
+        var alert = await database.Alerts.SingleOrDefaultAsync(x => x.Id == alertId, cancellationToken);
         if (alert is null) return TypedResults.NotFound();
         if (alert.AcknowledgedAt is null)
         {
-            alert.AcknowledgedAt = DateTimeOffset.UtcNow;
-            alert.AcknowledgedBy = user.DisplayName;
-            await db.SaveChangesAsync(ct);
-            await hub.Clients.Group(OperationsHub.TowerGroup).SendAsync("alertAcknowledged", AlertView.From(alert), ct);
+            alert.AcknowledgedAt = dateTimeProvider.UtcNow;
+            alert.AcknowledgedBy = userContext.DisplayName;
+            await database.SaveChangesAsync(cancellationToken);
+            await hubContext.Clients.Group(OperationsHub.TowerGroup).SendAsync("alertAcknowledged", AlertView.From(alert), cancellationToken);
         }
         return TypedResults.Ok(AlertView.From(alert));
     }
