@@ -21,10 +21,12 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+    <PackageReference Include="Npgsql.OpenTelemetry" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\shared\Siniestros360.Contracts\Siniestros360.Contracts.csproj" />
+    <ProjectReference Include="..\..\shared\Siniestros360.SharedKernel\Siniestros360.SharedKernel.csproj" />
   </ItemGroup>
 
 </Project>

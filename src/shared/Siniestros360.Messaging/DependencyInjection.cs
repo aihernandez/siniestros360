@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Siniestros360.Messaging;
 using Siniestros360.Messaging.Idempotency;
+using Siniestros360.Messaging.Middleware;
 using Siniestros360.Messaging.Persistence;
 
 namespace Microsoft.Extensions.Hosting;
@@ -31,6 +34,7 @@ public static class MessagingDependencyInjection
         builder.Services.AddScoped<IReliableMessagingDbContext>(services => services.GetRequiredService<TDbContext>());
         builder.Services.AddScoped<RollbackActions>();
         builder.Services.AddHostedService<IdempotencyCleanupWorker<TDbContext>>();
+        builder.Services.AddExceptionHandler<ConcurrencyConflictExceptionHandler>();
 
         builder.Services.AddMassTransit(bus =>
         {
@@ -53,6 +57,7 @@ public static class MessagingDependencyInjection
             {
                 bus.UsingInMemory((context, cfg) =>
                 {
+                    cfg.UsePublishFilter(typeof(HttpCorrelationPublishFilter<>), context);
                     cfg.ReceiveEndpoint(endpointName, endpoint => ConfigureEndpoint<TDbContext>(endpoint, context, Business(context, telemetryConsumers), sagas: true));
                     if (telemetryConsumers.Length > 0) cfg.ReceiveEndpoint(telemetryEndpoint, endpoint => ConfigureEndpoint<TDbContext>(endpoint, context, telemetryConsumers, sagas: false));
                 });
@@ -65,6 +70,7 @@ public static class MessagingDependencyInjection
             bus.UsingAzureServiceBus((context, cfg) =>
             {
                 ConfigureHost(cfg, builder.Configuration, connectionString);
+                cfg.UsePublishFilter(typeof(HttpCorrelationPublishFilter<>), context);
                 if (prefix.Length > 0) cfg.MessageTopology.SetEntityNameFormatter(new PrefixEntityNameFormatter(cfg.MessageTopology.EntityNameFormatter, prefix));
                 cfg.ReceiveEndpoint(prefix + endpointName, endpoint =>
                 {
@@ -86,13 +92,21 @@ public static class MessagingDependencyInjection
         return builder;
     }
 
-    // Aplica las migraciones del servicio. EF InMemory (ejecución aislada) sólo crea el modelo.
+    // Migra al arrancar sólo en Development (Aspire, pruebas) o con Database:MigrateOnStartup=true. En otros ambientes
+    // las migraciones son un paso del despliegue (bundle de EF): varias réplicas migrando a la vez, o una migración que
+    // falla a mitad del arranque, no deben decidir el esquema de producción. EF InMemory (ejecución aislada) sólo crea el modelo.
     public static async Task InitializeDatabaseAsync<TDbContext>(this WebApplication app) where TDbContext : DbContext
     {
         await using var scope = app.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<TDbContext>();
-        if (db.Database.IsRelational()) await db.Database.MigrateAsync();
-        else await db.Database.EnsureCreatedAsync();
+        if (!db.Database.IsRelational())
+        {
+            await db.Database.EnsureCreatedAsync();
+            return;
+        }
+
+        if (app.Environment.IsDevelopment() || app.Configuration.GetValue("Database:MigrateOnStartup", false)) await db.Database.MigrateAsync();
+        else app.Logger.LogInformation("Migraciones al arrancar desactivadas fuera de Development; se aplican en el despliegue.");
     }
 
     // Consumidor sin éxito tras los reintentos o contrato ilegible → DLQ de la cola, no colas _error adicionales.

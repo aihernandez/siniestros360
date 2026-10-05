@@ -45,7 +45,7 @@ public static class AdjusterEndpoints
     private static async Task<Ok<List<AdjusterResponse>>> ListAsync(AdjustersDbContext db, CancellationToken ct)
         => TypedResults.Ok(await db.Adjusters.AsNoTracking().OrderBy(x => x.DisplayName).Select(x => AdjusterResponse.From(x)).ToListAsync(ct));
 
-    private static async Task<Results<Ok<AdjusterResponse>, NotFound>> GetAsync(Guid id, UserContext user, AdjustersDbContext db, CancellationToken ct)
+    private static async Task<Results<Ok<AdjusterResponse>, NotFound>> GetAsync(Guid id, IUserContext user, AdjustersDbContext db, CancellationToken ct)
     {
         if (!await user.CanActAsAdjusterAsync(id)) return TypedResults.NotFound();
         var adjuster = await db.Adjusters.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct);
@@ -53,7 +53,7 @@ public static class AdjusterEndpoints
     }
 
     private static async Task<Results<Ok<AdjusterResponse>, ForbidHttpResult, NotFound, ProblemHttpResult>> SetAvailabilityAsync(
-        Guid id, AvailabilityRequest request, HttpContext http, UserContext user, AdjustersDbContext db, IPublishEndpoint publish, CancellationToken ct)
+        Guid id, AvailabilityRequest request, HttpContext http, IUserContext user, AdjustersDbContext db, IPublishEndpoint publish, CancellationToken ct)
     {
         if (!await user.CanActAsAdjusterAsync(id)) return TypedResults.Forbid();
         var adjuster = await db.Adjusters.SingleOrDefaultAsync(x => x.Id == id, ct);

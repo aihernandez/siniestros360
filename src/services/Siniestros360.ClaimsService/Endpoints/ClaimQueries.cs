@@ -25,10 +25,10 @@ public static class ClaimQueries
 
     // El filtro de la consulta es la misma regla que la política ClaimParticipant, aplicada en SQL para no traer
     // siniestros ajenos y descartarlos en memoria.
-    private static async Task<Ok<List<ClaimResponse>>> ListAsync(UserContext user, ClaimsDbContext db, CancellationToken ct)
+    private static async Task<Ok<List<ClaimResponse>>> ListAsync(IUserContext user, ClaimsDbContext db, CancellationToken ct)
     {
         var query = db.Claims.AsNoTracking();
-        if (!user.User.IsControlTower())
+        if (!user.IsControlTower)
         {
             var adjusterId = user.AdjusterId;
             var insuredId = user.UserId;
@@ -39,7 +39,7 @@ public static class ClaimQueries
         return TypedResults.Ok(await query.OrderByDescending(x => x.ReportedAt).Select(x => ClaimResponse.From(x)).ToListAsync(ct));
     }
 
-    private static async Task<Results<Ok<ClaimResponse>, NotFound>> GetAsync(Guid claimId, UserContext user, ClaimsDbContext db, CancellationToken ct)
+    private static async Task<Results<Ok<ClaimResponse>, NotFound>> GetAsync(Guid claimId, IUserContext user, ClaimsDbContext db, CancellationToken ct)
     {
         var claim = await db.Claims.AsNoTracking().SingleOrDefaultAsync(x => x.Id == claimId, ct);
         return claim is not null && await user.CanAccessClaimAsync(claim.Participants())

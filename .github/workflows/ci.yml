@@ -24,6 +24,7 @@ jobs:
       - run: dotnet build Siniestros360.slnx -c Release --no-restore
       - run: dotnet test tests/Siniestros360.Tests.Unit -c Release --no-build
       - run: dotnet test tests/Siniestros360.Tests.Contracts -c Release --no-build
+      - run: dotnet test tests/Siniestros360.Tests.Architecture -c Release --no-build
       - run: dotnet test tests/Siniestros360.Tests.Integration -c Release --no-build
       - run: dotnet test tests/Siniestros360.LocationSimulator.Tests -c Release --no-build
       - name: Verify formatting

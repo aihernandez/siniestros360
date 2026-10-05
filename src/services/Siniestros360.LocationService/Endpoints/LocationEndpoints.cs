@@ -36,7 +36,7 @@ public static class LocationEndpoints
     }
 
     private static async Task<Results<Ok<LocationResponse>, Accepted, ForbidHttpResult, ValidationProblem>> RecordAsync(
-        Guid adjusterId, LocationUpdate request, HttpContext http, UserContext user, LocationDbContext db, ILocationEventSink sink, CancellationToken ct)
+        Guid adjusterId, LocationUpdate request, HttpContext http, IUserContext user, LocationDbContext db, ILocationEventSink sink, CancellationToken ct)
     {
         if (!await user.CanActAsAdjusterAsync(adjusterId)) return TypedResults.Forbid();
         if (!IsValid(request.Latitude, request.Longitude)) return InvalidCoordinates();
@@ -55,7 +55,7 @@ public static class LocationEndpoints
         return TypedResults.Accepted((string?)null);
     }
 
-    private static async Task<Results<Ok<LocationResponse>, NotFound>> GetLatestAsync(Guid adjusterId, UserContext user, LocationDbContext db, CancellationToken ct)
+    private static async Task<Results<Ok<LocationResponse>, NotFound>> GetLatestAsync(Guid adjusterId, IUserContext user, LocationDbContext db, CancellationToken ct)
     {
         if (!await user.CanActAsAdjusterAsync(adjusterId)) return TypedResults.NotFound();
         var latest = await db.LatestLocations.AsNoTracking().SingleOrDefaultAsync(x => x.AdjusterId == adjusterId, ct);

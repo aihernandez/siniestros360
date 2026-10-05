@@ -13,6 +13,9 @@ using Microsoft.IdentityModel.Tokens;
 using Siniestros360.Contracts.Common;
 using System.Text;
 using System.Text.Json.Serialization;
+using Npgsql;
+using Siniestros360.ServiceDefaults.Endpoints;
+using Siniestros360.ServiceDefaults.Middleware;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -65,13 +68,13 @@ public static class Extensions
                     ?? context.HttpContext.TraceIdentifier;
             };
         });
-        builder.Services.AddOpenApi();
+        builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
         // AddValidation() no va aquí: su generador sólo descubre los tipos del ensamblado donde se llama, así que cada
         // servicio lo llama en su Program.cs. Llamarlo aquí dejaba la validación de entrada sin efecto (BUG-043).
         builder.Services.ConfigureHttpJsonOptions(options =>
             options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddHttpContextAccessor();
-        builder.Services.AddScoped<UserContext>();
+        builder.Services.AddScoped<IUserContext, UserContext>();
 
         var signingKey = builder.Configuration["Jwt:SigningKey"];
         if (string.IsNullOrWhiteSpace(signingKey) || signingKey.Length < 32)
@@ -149,6 +152,8 @@ public static class Extensions
                 tracing.AddSource(builder.Environment.ApplicationName)
                     .AddSource("Siniestros360.*")
                     .AddSource("MassTransit")
+                    // Cada consulta a PostgreSQL como span hijo de la petición o del mensaje que la originó.
+                    .AddNpgsql()
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
                         tracing.Filter = context =>
@@ -210,20 +215,7 @@ public static class Extensions
     {
         app.UseExceptionHandler();
         app.UseStatusCodePages();
-        app.Use(async (context, next) =>
-        {
-            const string headerName = "X-Correlation-ID";
-            var correlationId = context.Request.Headers[headerName].FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(correlationId))
-            {
-                correlationId = System.Diagnostics.Activity.Current?.TraceId.ToString()
-                    ?? context.TraceIdentifier;
-            }
-
-            context.Request.Headers[headerName] = correlationId;
-            context.Response.Headers[headerName] = correlationId;
-            await next(context);
-        });
+        app.UseCorrelationId();
         app.UseAuthentication();
         app.UseAuthorization();
         if (app.Environment.IsDevelopment())

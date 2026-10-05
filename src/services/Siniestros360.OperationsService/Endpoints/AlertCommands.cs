@@ -20,7 +20,7 @@ public static class AlertCommands
         return operations;
     }
 
-    private static async Task<Results<Ok<AlertView>, NotFound>> AcknowledgeAsync(Guid id, UserContext user, OperationsDbContext db, IHubContext<OperationsHub> hub, CancellationToken ct)
+    private static async Task<Results<Ok<AlertView>, NotFound>> AcknowledgeAsync(Guid id, IUserContext user, OperationsDbContext db, IHubContext<OperationsHub> hub, CancellationToken ct)
     {
         var alert = await db.Alerts.SingleOrDefaultAsync(x => x.Id == id, ct);
         if (alert is null) return TypedResults.NotFound();

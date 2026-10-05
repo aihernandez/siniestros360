@@ -30,7 +30,7 @@ public static class OperationsQueries
     private static async Task<Ok<List<ClaimView>>> ListClaimsAsync(OperationsDbContext db, CancellationToken ct)
         => TypedResults.Ok(await db.Claims.AsNoTracking().Where(x => x.Folio != "").OrderByDescending(x => x.ReportedAt).Select(x => ClaimView.From(x)).ToListAsync(ct));
 
-    private static async Task<Results<Ok<ClaimView>, NotFound>> GetClaimAsync(Guid id, UserContext user, OperationsDbContext db, CancellationToken ct)
+    private static async Task<Results<Ok<ClaimView>, NotFound>> GetClaimAsync(Guid id, IUserContext user, OperationsDbContext db, CancellationToken ct)
     {
         var claim = await db.Claims.AsNoTracking().SingleOrDefaultAsync(x => x.ClaimId == id, ct);
         return claim is not null && await user.CanAccessClaimAsync(claim.Participants())

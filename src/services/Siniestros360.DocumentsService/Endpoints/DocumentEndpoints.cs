@@ -46,7 +46,7 @@ public static class DocumentEndpoints
         return documents;
     }
 
-    private static async Task<Results<Ok<List<DocumentResponse>>, NotFound>> ListAsync(Guid claimId, UserContext user, DocumentsDbContext db, CancellationToken ct)
+    private static async Task<Results<Ok<List<DocumentResponse>>, NotFound>> ListAsync(Guid claimId, IUserContext user, DocumentsDbContext db, CancellationToken ct)
     {
         if (!await CanAccessAsync(db, claimId, user, ct)) return TypedResults.NotFound();
         var documents = await db.Documents.AsNoTracking()
@@ -57,7 +57,7 @@ public static class DocumentEndpoints
         return TypedResults.Ok(documents);
     }
 
-    private static async Task<Results<FileStreamHttpResult, NotFound>> DownloadAsync(Guid id, UserContext user, DocumentsDbContext db, IObjectStorage storage, CancellationToken ct)
+    private static async Task<Results<FileStreamHttpResult, NotFound>> DownloadAsync(Guid id, IUserContext user, DocumentsDbContext db, IObjectStorage storage, CancellationToken ct)
     {
         var document = await db.Documents.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id && x.DeletedAt == null, ct);
         if (document is null || !await CanAccessAsync(db, document.ClaimId, user, ct)) return TypedResults.NotFound();
@@ -66,7 +66,7 @@ public static class DocumentEndpoints
 
     [Idempotent]
     private static async Task<Results<Created<DocumentResponse>, ValidationProblem, NotFound>> UploadAsync(
-        Guid claimId, IFormFile file, HttpContext http, UserContext user, DocumentsDbContext db, IObjectStorage storage, IPublishEndpoint publish, RollbackActions rollbackActions, CancellationToken ct)
+        Guid claimId, IFormFile file, HttpContext http, IUserContext user, DocumentsDbContext db, IObjectStorage storage, IPublishEndpoint publish, RollbackActions rollbackActions, CancellationToken ct)
     {
         using var activity = ActivitySource.StartActivity("Documents.Upload");
         activity?.SetTag("siniestros360.claim_id", claimId);
@@ -95,7 +95,7 @@ public static class DocumentEndpoints
         return TypedResults.Created($"/api/v1/documents/{id}", DocumentResponse.From(document));
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteAsync(Guid id, HttpContext http, UserContext user, DocumentsDbContext db, IObjectStorage storage, IPublishEndpoint publish, CancellationToken ct)
+    private static async Task<Results<NoContent, NotFound>> DeleteAsync(Guid id, HttpContext http, IUserContext user, DocumentsDbContext db, IObjectStorage storage, IPublishEndpoint publish, CancellationToken ct)
     {
         var document = await db.Documents.SingleOrDefaultAsync(x => x.Id == id && x.DeletedAt == null, ct);
         if (document is null || !await CanAccessAsync(db, document.ClaimId, user, ct)) return TypedResults.NotFound();
@@ -107,7 +107,7 @@ public static class DocumentEndpoints
     }
 
     // Sin proyección todavía (el evento del siniestro no ha llegado) nadie accede; con ella decide la política.
-    private static async Task<bool> CanAccessAsync(DocumentsDbContext db, Guid claimId, UserContext user, CancellationToken ct)
+    private static async Task<bool> CanAccessAsync(DocumentsDbContext db, Guid claimId, IUserContext user, CancellationToken ct)
     {
         var access = await db.ClaimAccess.AsNoTracking().SingleOrDefaultAsync(x => x.ClaimId == claimId, ct);
         return access is not null && await user.CanAccessClaimAsync(new ClaimParticipants(access.InsuredId, access.AdjusterId));

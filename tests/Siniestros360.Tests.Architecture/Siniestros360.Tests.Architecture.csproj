@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+  <!-- Cada servicio define su propio Program: no se usa por nombre, sólo se cargan los ensamblados por un tipo ancla. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\services\Siniestros360.AdjustersService\Siniestros360.AdjustersService.csproj" />
+    <ProjectReference Include="..\..\src\services\Siniestros360.ClaimsService\Siniestros360.ClaimsService.csproj" />
+    <ProjectReference Include="..\..\src\services\Siniestros360.DispatchService\Siniestros360.DispatchService.csproj" />
+    <ProjectReference Include="..\..\src\services\Siniestros360.DocumentsService\Siniestros360.DocumentsService.csproj" />
+    <ProjectReference Include="..\..\src\services\Siniestros360.IdentityService\Siniestros360.IdentityService.csproj" />
+    <ProjectReference Include="..\..\src\services\Siniestros360.LocationService\Siniestros360.LocationService.csproj" />
+    <ProjectReference Include="..\..\src\services\Siniestros360.OperationsService\Siniestros360.OperationsService.csproj" />
+    <ProjectReference Include="..\..\src\services\Siniestros360.PolicyService\Siniestros360.PolicyService.csproj" />
+    <ProjectReference Include="..\..\src\services\Siniestros360.SlaService\Siniestros360.SlaService.csproj" />
+    <ProjectReference Include="..\..\src\shared\Siniestros360.SharedKernel\Siniestros360.SharedKernel.csproj" />
+  </ItemGroup>
+</Project>

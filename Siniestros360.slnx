@@ -7,6 +7,7 @@
   <Folder Name="/src/shared/">
     <Project Path="src/shared/Siniestros360.Contracts/Siniestros360.Contracts.csproj" />
     <Project Path="src/shared/Siniestros360.Messaging/Siniestros360.Messaging.csproj" />
+    <Project Path="src/shared/Siniestros360.SharedKernel/Siniestros360.SharedKernel.csproj" />
   </Folder>
   <Folder Name="/src/gateway/">
     <Project Path="src/gateway/Siniestros360.Gateway/Siniestros360.Gateway.csproj" />
@@ -28,6 +29,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Siniestros360.Tests.Unit/Siniestros360.Tests.Unit.csproj" />
     <Project Path="tests/Siniestros360.Tests.Contracts/Siniestros360.Tests.Contracts.csproj" />
+    <Project Path="tests/Siniestros360.Tests.Architecture/Siniestros360.Tests.Architecture.csproj" />
     <Project Path="tests/Siniestros360.Tests.Integration/Siniestros360.Tests.Integration.csproj" />
     <Project Path="tests/Siniestros360.LocationSimulator.Tests/Siniestros360.LocationSimulator.Tests.csproj" />
   </Folder>

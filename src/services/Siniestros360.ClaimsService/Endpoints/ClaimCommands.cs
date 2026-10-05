@@ -51,7 +51,7 @@ public static class ClaimCommands
     }
 
     [Idempotent]
-    private static async Task<Created<ClaimResponse>> ReportAsync(ReportClaimRequest request, HttpContext http, UserContext user, ClaimsDbContext db, IPublishEndpoint publish, CancellationToken ct)
+    private static async Task<Created<ClaimResponse>> ReportAsync(ReportClaimRequest request, HttpContext http, IUserContext user, ClaimsDbContext db, IPublishEndpoint publish, CancellationToken ct)
     {
         using var activity = ClaimsTelemetry.ActivitySource.StartActivity("Claim.Report");
         var now = DateTimeOffset.UtcNow;
@@ -86,11 +86,11 @@ public static class ClaimCommands
 
     // Una transición del siniestro: participa sólo quien la política permite (404 si no, para no revelar el siniestro),
     // el dominio decide si es legal (409) y el evento sale por el outbox junto con ClaimStatusChanged.
-    private static void MapTransition<TEvent>(RouteGroupBuilder claims, string route, string name, string summary, string policy, Func<Claim, UserContext, DateTimeOffset, TEvent> transition)
+    private static void MapTransition<TEvent>(RouteGroupBuilder claims, string route, string name, string summary, string policy, Func<Claim, IUserContext, DateTimeOffset, TEvent> transition)
         where TEvent : class
     {
         var endpoint = claims.MapPost(route, [Idempotent] async Task<Results<Ok<ClaimResponse>, NotFound, ForbidHttpResult, ProblemHttpResult>> (
-            Guid claimId, HttpContext http, UserContext user, ClaimsDbContext db, IPublishEndpoint publish, CancellationToken ct) =>
+            Guid claimId, HttpContext http, IUserContext user, ClaimsDbContext db, IPublishEndpoint publish, CancellationToken ct) =>
         {
             var claim = await db.Claims.Include(x => x.Timeline).SingleOrDefaultAsync(x => x.Id == claimId, ct);
             if (claim is null || !await user.CanAccessClaimAsync(claim.Participants())) return TypedResults.NotFound();
@@ -113,5 +113,5 @@ public static class ClaimCommands
     }
 
     // Un ajustador sin adjuster_id en el token no puede actuar sobre ningún siniestro.
-    private static Guid RequiredAdjuster(UserContext user) => user.AdjusterId ?? throw new UnauthorizedAccessException("The token has no adjuster_id claim.");
+    private static Guid RequiredAdjuster(IUserContext user) => user.AdjusterId ?? throw new UnauthorizedAccessException("The token has no adjuster_id claim.");
 }
