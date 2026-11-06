@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup><PackageReference Include="FluentAssertions" /></ItemGroup>
   <ItemGroup><ProjectReference Include="..\..\src\services\Siniestros360.ClaimsService\Siniestros360.ClaimsService.csproj" /><ProjectReference Include="..\..\src\services\Siniestros360.DispatchService\Siniestros360.DispatchService.csproj" /><ProjectReference Include="..\..\src\shared\Siniestros360.Messaging\Siniestros360.Messaging.csproj" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\services\Siniestros360.IdentityService\Siniestros360.IdentityService.csproj" />
+  </ItemGroup>
 </Project>

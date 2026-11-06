@@ -9,6 +9,7 @@ using Siniestros360.Contracts.Common;
 using Siniestros360.Contracts.Events;
 using Siniestros360.Messaging;
 using Siniestros360.ServiceDefaults.Endpoints;
+using Siniestros360.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddSiniestrosApiDefaults();
@@ -26,7 +27,10 @@ var meter = new Meter("Siniestros360.AdjustersService");
 var app = builder.Build();
 app.UseSiniestrosApiDefaults();
 await app.InitializeDatabaseAsync<AdjustersDbContext>();
-await SeedDemoAdjusters(app);
+if (DemoSettings.GetPassword(app.Configuration, app.Environment) is not null)
+{
+    await SeedDemoAdjusters(app);
+}
 var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
 meter.CreateObservableGauge("adjusters.available.count", () =>
 {

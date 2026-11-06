@@ -2,11 +2,27 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Options;
 
 namespace Siniestros360.LocationSimulator.Tests;
 
 public sealed class ApiVersioningTests
 {
+    [Fact]
+    public async Task Forwarding_without_an_explicit_password_fails_startup()
+    {
+        await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Development");
+            builder.UseSetting("Simulator:Forwarding:Enabled", "true");
+            builder.UseSetting("Simulator:Forwarding:Password", "");
+        });
+
+        var error = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
+
+        Assert.Contains("Simulator:Forwarding:Password", error.Message);
+    }
+
     [Fact]
     public async Task Simulator_exposes_v1_and_rejects_v2()
     {

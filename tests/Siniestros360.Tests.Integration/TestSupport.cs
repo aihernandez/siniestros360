@@ -38,6 +38,8 @@ public class ServiceFactory<TProgram>(string connectionName) : WebApplicationFac
     {
         builder.UseEnvironment("Development");
         builder.UseSetting("Jwt:SigningKey", Tokens.Key);
+        builder.UseSetting("Demo:Enabled", "true");
+        builder.UseSetting("Demo:Password", $"Aa1!{Guid.NewGuid():N}");
         builder.UseSetting($"ConnectionStrings:{connectionName}", Postgres.ConnectionString($"{connectionName}_{Guid.NewGuid():N}"));
     }
 
