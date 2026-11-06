@@ -1,0 +1,185 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net">
+  <diagram id="claims-internal" name="Claims internal CQRS">
+    <mxGraphModel page="1" pageWidth="1160" pageHeight="1260">
+      <root>
+        <mxCell id="0" value="" />
+        <mxCell id="1" parent="0" value="" />
+        <mxCell id="canvas" value="" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;fillColor=#F0F6FF;strokeColor=none;">
+          <mxGeometry x="0" y="0" width="1160" height="1260" as="geometry" />
+        </mxCell>
+        <mxCell id="title" value="CQRS in ClaimsService" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=46;fontColor=#101828;fontStyle=1;">
+          <mxGeometry x="42" y="30" width="1080" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="One API · two paths · one database" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=28;fontColor=#526779;fontStyle=1;">
+          <mxGeometry x="44" y="99" width="1070" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="query-zone" value="" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;rounded=1;arcSize=8;fillColor=#DFF3FA;strokeColor=none;spacing=14;">
+          <mxGeometry x="25" y="250" width="310" height="690" as="geometry" />
+        </mxCell>
+        <mxCell id="command-zone" value="" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;rounded=1;arcSize=8;fillColor=#F1E7F7;strokeColor=none;spacing=14;">
+          <mxGeometry x="390" y="250" width="745" height="690" as="geometry" />
+        </mxCell>
+        <mxCell id="query-zone-title" value="READ" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=14;fontColor=#27836D;fontStyle=1;">
+          <mxGeometry x="130" y="263" width="95" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="command-zone-title" value="WRITE" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=16;fontColor=#8063A3;fontStyle=1;">
+          <mxGeometry x="620" y="263" width="160" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="divider" value="" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;shape=line;direction=south;fillColor=none;strokeColor=#344054;strokeWidth=3;dashed=1;dashPattern=4 4;">
+          <mxGeometry x="360" y="265" width="1" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="api" value="&lt;b&gt;API · Claims endpoints&lt;/b&gt;&lt;br&gt;Authorization · command / query · HTTP response" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;rounded=1;arcSize=8;fillColor=#D8E7FB;strokeColor=#859BB5;spacing=14;">
+          <mxGeometry x="60" y="165" width="1040" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="query-handler" value="&lt;b&gt;Query handler&lt;/b&gt;&lt;br&gt;EF Core · AsNoTracking" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;rounded=1;arcSize=8;fillColor=#FFEAC7;strokeColor=#D0A864;spacing=14;">
+          <mxGeometry x="60" y="370" width="250" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="command-handler" value="&lt;b&gt;Command handler&lt;/b&gt;&lt;br&gt;CancelClaimCommandHandler + ClaimTransition" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;rounded=1;arcSize=8;fillColor=#D6E8D1;strokeColor=#87A982;spacing=14;">
+          <mxGeometry x="460" y="370" width="610" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="domain" value="&lt;b&gt;Domain logic&lt;/b&gt;&lt;br&gt;Claim.Cancel(...)&lt;br&gt;Rules and state transition" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;rounded=1;arcSize=8;fillColor=#FFF3CD;strokeColor=#D7BE79;spacing=14;">
+          <mxGeometry x="740" y="550" width="270" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="dbcontext" value="&lt;b&gt;ClaimsDbContext · EF Core&lt;/b&gt;&lt;br&gt;Direct persistence access" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;rounded=1;arcSize=8;fillColor=#F7D1D4;strokeColor=#B97D83;spacing=14;">
+          <mxGeometry x="460" y="765" width="610" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="database" value="&lt;b&gt;PostgreSQL · claimsdb&lt;/b&gt;&lt;br&gt;One private database for reads and writes" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;rounded=1;arcSize=8;fillColor=#E2D4E8;strokeColor=#A38BAB;spacing=14;">
+          <mxGeometry x="60" y="965" width="1040" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="query-request" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="115" y="245" as="sourcePoint" />
+            <mxPoint x="115" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="query-response" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="230" y="370" as="sourcePoint" />
+            <mxPoint x="230" y="245" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="query-sql" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="115" y="470" as="sourcePoint" />
+            <mxPoint x="115" y="965" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="query-data" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="230" y="965" as="sourcePoint" />
+            <mxPoint x="230" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="query-step-1" value="&lt;b&gt;1.&lt;br&gt;Query&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="32" y="304" width="78" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="query-step-4" value="&lt;b&gt;4.&lt;br&gt;Result&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="235" y="304" width="95" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="query-step-2" value="&lt;b&gt;2. SQL&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="35" y="675" width="75" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="query-step-3" value="&lt;b&gt;3. Data&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="240" y="675" width="90" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="command-request" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="245" as="sourcePoint" />
+            <mxPoint x="500" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="command-response" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1040" y="370" as="sourcePoint" />
+            <mxPoint x="1040" y="245" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="command-step-1" value="&lt;b&gt;1.&lt;br&gt;Command&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="410" y="304" width="85" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="command-step-9" value="&lt;b&gt;9.&lt;br&gt;Result&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="930" y="304" width="100" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="get-entity" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="470" as="sourcePoint" />
+            <mxPoint x="500" y="765" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="entity-result" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="590" y="765" as="sourcePoint" />
+            <mxPoint x="590" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="invoke-domain" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="875" y="470" as="sourcePoint" />
+            <mxPoint x="875" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="save-changes" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1040" y="470" as="sourcePoint" />
+            <mxPoint x="1040" y="765" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="command-step-2" value="&lt;b&gt;2. Load&lt;br&gt;entity&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="400" y="580" width="95" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="command-step-5" value="&lt;b&gt;5. Entity&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="605" y="580" width="125" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="command-step-6" value="&lt;b&gt;6. Invoke&lt;br&gt;method&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="890" y="483" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="command-step-7" value="&lt;b&gt;7. Save&lt;br&gt;changes&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="895" y="684" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="load-sql" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="840" as="sourcePoint" />
+            <mxPoint x="500" y="965" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="load-data" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="590" y="965" as="sourcePoint" />
+            <mxPoint x="590" y="840" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="save-sql" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#203344;dashed=0;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1040" y="840" as="sourcePoint" />
+            <mxPoint x="1040" y="965" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="command-step-3" value="&lt;b&gt;3. SQL&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="410" y="875" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="command-step-4" value="&lt;b&gt;4. Data&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="605" y="875" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="command-step-8" value="&lt;b&gt;8. SQL&lt;/b&gt;" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=17;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="940" y="875" width="95" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="after-commit" edge="1" parent="1" style="edgeStyle=none;rounded=0;strokeWidth=2;strokeColor=#8063A3;dashed=1;endArrow=block;endFill=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1080" y="1050" as="sourcePoint" />
+            <mxPoint x="1080" y="1090" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="publisher" value="&lt;b&gt;After commit · asynchronous delivery&lt;/b&gt;&lt;br&gt;Outbox → MassTransit → Azure Service Bus · ClaimCancelled / ClaimStatusChanged" vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;rounded=1;arcSize=8;fillColor=#F1E7F7;strokeColor=#A38BAB;spacing=14;">
+          <mxGeometry x="60" y="1090" width="1040" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="scope-note" value="Code example: List + Cancel. Read and write paths have independent numbering." vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=16;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="45" y="1182" width="1070" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="implementation-note" value="Query: ListClaimsQueryHandler. Command: ClaimTransition. No intermediate repository layer." vertex="1" parent="1" style="html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;strokeWidth=1.3;text;fillColor=none;strokeColor=none;align=left;spacing=0;fontSize=15;fontColor=#203344;fontStyle=0;">
+          <mxGeometry x="45" y="1214" width="1070" height="28" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

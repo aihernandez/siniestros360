@@ -1,0 +1,47 @@
+{
+  "identity": {
+    "db_key": "identitydb",
+    "project": "Identity",
+    "service_name": "identity-service"
+  },
+  "claims": {
+    "db_key": "claimsdb",
+    "project": "Claims",
+    "service_name": "claims-service"
+  },
+  "adjusters": {
+    "db_key": "adjustersdb",
+    "project": "Adjusters",
+    "service_name": "adjusters-service"
+  },
+  "location": {
+    "db_key": "locationsdb",
+    "project": "Location",
+    "service_name": "location-service"
+  },
+  "dispatch": {
+    "db_key": "dispatchdb",
+    "project": "Dispatch",
+    "service_name": "dispatch-service"
+  },
+  "policy": {
+    "db_key": "policydb",
+    "project": "Policy",
+    "service_name": "policy-service"
+  },
+  "sla": {
+    "db_key": "sladb",
+    "project": "Sla",
+    "service_name": "sla-service"
+  },
+  "documents": {
+    "db_key": "documentsdb",
+    "project": "Documents",
+    "service_name": "documents-service"
+  },
+  "operations": {
+    "db_key": "operationsdb",
+    "project": "Operations",
+    "service_name": "operations-service"
+  }
+}

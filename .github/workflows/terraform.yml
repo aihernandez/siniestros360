@@ -1,0 +1,31 @@
+name: Terraform authoring checks
+
+on:
+  pull_request:
+    paths: ['infrastructure/**', '.github/workflows/terraform.yml']
+  push:
+    paths: ['infrastructure/**', '.github/workflows/terraform.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.1
+          terraform_wrapper: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate schemas and mocked plans without Azure credentials
+        run: python infrastructure/scripts/check_terraform.py --report terraform-validation.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terraform-validation
+          path: terraform-validation.json

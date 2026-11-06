@@ -1,0 +1,10 @@
+{
+  "subscription_id": "00000000-0000-0000-0000-000000000001",
+  "operator_object_id": "00000000-0000-0000-0000-000000000001",
+  "name": "s360devstate000000",
+  "allowed_ip_cidrs": [
+    "203.0.113.10/32"
+  ],
+  "allowed_subnet_ids": [],
+  "location": "mexicocentral"
+}

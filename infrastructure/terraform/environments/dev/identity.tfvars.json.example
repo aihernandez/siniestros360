@@ -1,0 +1,16 @@
+{
+  "workforce_tenant_id": "00000000-0000-0000-0000-000000000001",
+  "customer_tenant_id": "00000000-0000-0000-0000-000000000001",
+  "workforce_owner_object_ids": [],
+  "customer_owner_object_ids": [],
+  "workforce_redirect_uris": [
+    "https://adjuster.dev.claims.example.com/",
+    "https://tower.dev.claims.example.com/"
+  ],
+  "customer_redirect_uris": [
+    "https://insured.dev.claims.example.com/"
+  ],
+  "workforce_native_redirect_uris": [],
+  "customer_native_redirect_uris": [],
+  "name": "s360-dev"
+}

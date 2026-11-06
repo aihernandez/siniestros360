@@ -1,0 +1,13 @@
+{
+  "subscription_id": "00000000-0000-0000-0000-000000000001",
+  "region_key": "chilecentral",
+  "state": {
+    "resource_group_name": "rg-s360prodstate000000-tfstate",
+    "storage_account_name": "s360prodstate000000",
+    "container_name": "tfstate",
+    "platform_key": "prod/platform.tfstate"
+  },
+  "blob_sas_start_utc": "2026-11-06T00:00:00Z",
+  "blob_sas_expiry_utc": "2026-11-20T00:00:00Z",
+  "policy_provider_endpoint": ""
+}

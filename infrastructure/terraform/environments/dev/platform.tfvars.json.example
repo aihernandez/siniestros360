@@ -1,0 +1,24 @@
+{
+  "subscription_id": "00000000-0000-0000-0000-000000000001",
+  "tenant_id": "00000000-0000-0000-0000-000000000001",
+  "operator_object_id": "00000000-0000-0000-0000-000000000001",
+  "admin_group_object_ids": [
+    "00000000-0000-0000-0000-000000000001"
+  ],
+  "alert_email": "operations@example.com",
+  "name_prefix": "s360",
+  "environment": "dev",
+  "kubernetes_version": null,
+  "regions": {
+    "mexicocentral": {
+      "location": "mexicocentral",
+      "vnet_cidr": "10.50.0.0/16",
+      "zones": [
+        "1",
+        "2",
+        "3"
+      ],
+      "postgres_zone_redundant": false
+    }
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "environment": "prod",
+  "status": "configuration_created_not_deployed",
+  "regions": [
+    "centralus",
+    "francecentral",
+    "mexicocentral",
+    "chilecentral"
+  ],
+  "domain_example": "claims.example.com",
+  "state_account_example": "s360prodstate000000",
+  "input_policy": "Copy .example files to ignored local files; replace IDs, DNS, images and dates. PFX/password are supplied through protected environment variables.",
+  "stages": [
+    {
+      "root": "bootstrap",
+      "region": null,
+      "inputs": "bootstrap.tfvars.json.example",
+      "backend": "backends/bootstrap.tfbackend.example",
+      "state_key": "prod/bootstrap.tfstate"
+    },
+    {
+      "root": "platform",
+      "region": null,
+      "inputs": "platform.tfvars.json.example",
+      "backend": "backends/platform.tfbackend.example",
+      "state_key": "prod/platform.tfstate"
+    },
+    {
+      "root": "tenant",
+      "region": null,
+      "inputs": "tenant.tfvars.json.example",
+      "backend": "backends/tenant.tfbackend.example",
+      "state_key": "prod/tenant.tfstate"
+    },
+    {
+      "root": "identity",
+      "region": null,
+      "inputs": "identity.tfvars.json.example",
+      "backend": "backends/identity.tfbackend.example",
+      "state_key": "prod/identity.tfstate"
+    },
+    {
+      "root": "edge",
+      "region": null,
+      "inputs": "edge.tfvars.json.example",
+      "backend": "backends/edge.tfbackend.example",
+      "state_key": "prod/edge.tfstate"
+    },
+    {
+      "root": "regional-data",
+      "region": "centralus",
+      "inputs": "regional-data/centralus.tfvars.json.example",
+      "backend": "backends/regional-data/centralus.tfbackend.example",
+      "state_key": "prod/regional-data/centralus.tfstate"
+    },
+    {
+      "root": "workloads",
+      "region": "centralus",
+      "inputs": "workloads/centralus.tfvars.json.example",
+      "backend": "backends/workloads/centralus.tfbackend.example",
+      "state_key": "prod/workloads/centralus.tfstate"
+    },
+    {
+      "root": "regional-data",
+      "region": "francecentral",
+      "inputs": "regional-data/francecentral.tfvars.json.example",
+      "backend": "backends/regional-data/francecentral.tfbackend.example",
+      "state_key": "prod/regional-data/francecentral.tfstate"
+    },
+    {
+      "root": "workloads",
+      "region": "francecentral",
+      "inputs": "workloads/francecentral.tfvars.json.example",
+      "backend": "backends/workloads/francecentral.tfbackend.example",
+      "state_key": "prod/workloads/francecentral.tfstate"
+    },
+    {
+      "root": "regional-data",
+      "region": "mexicocentral",
+      "inputs": "regional-data/mexicocentral.tfvars.json.example",
+      "backend": "backends/regional-data/mexicocentral.tfbackend.example",
+      "state_key": "prod/regional-data/mexicocentral.tfstate"
+    },
+    {
+      "root": "workloads",
+      "region": "mexicocentral",
+      "inputs": "workloads/mexicocentral.tfvars.json.example",
+      "backend": "backends/workloads/mexicocentral.tfbackend.example",
+      "state_key": "prod/workloads/mexicocentral.tfstate"
+    },
+    {
+      "root": "regional-data",
+      "region": "chilecentral",
+      "inputs": "regional-data/chilecentral.tfvars.json.example",
+      "backend": "backends/regional-data/chilecentral.tfbackend.example",
+      "state_key": "prod/regional-data/chilecentral.tfstate"
+    },
+    {
+      "root": "workloads",
+      "region": "chilecentral",
+      "inputs": "workloads/chilecentral.tfvars.json.example",
+      "backend": "backends/workloads/chilecentral.tfbackend.example",
+      "state_key": "prod/workloads/chilecentral.tfstate"
+    }
+  ]
+}

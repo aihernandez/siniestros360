@@ -1,0 +1,221 @@
+{
+  "status": "authored_and_locally_validated_not_deployed",
+  "scenario": "Approved four-region Siniestros360 AKS reference architecture",
+  "regions": [
+    "centralus",
+    "francecentral",
+    "mexicocentral",
+    "chilecentral"
+  ],
+  "logical_service_databases_per_region": 9,
+  "stages": [
+    {
+      "order": 1,
+      "path": "bootstrap",
+      "state": "global/bootstrap",
+      "covers": [
+        "Azure AD state authentication",
+        "Storage firewall/IP and VNet rules",
+        "versioning/retention",
+        "state RBAC"
+      ]
+    },
+    {
+      "order": 2,
+      "path": "platform",
+      "state": "global/platform",
+      "covers": [
+        "Premium private ACR with geo-replications",
+        "four VNets/private DNS/NAT",
+        "private AKS/Cilium/Entra/workload identity",
+        "per-service managed identities",
+        "nine logical PostgreSQL databases per region",
+        "Premium Service Bus/private endpoints",
+        "private ZRS Blob/Key Vault",
+        "regional Monitor/Application Insights/alerts"
+      ]
+    },
+    {
+      "order": 3,
+      "path": "tenant",
+      "state": "global/customer-tenant",
+      "optional": true,
+      "covers": [
+        "External ID tenant creation via pinned AzAPI resource"
+      ]
+    },
+    {
+      "order": 4,
+      "path": "identity",
+      "state": "global/identity",
+      "covers": [
+        "workforce and customer API scopes/roles",
+        "SPA public clients/admin delegated consent",
+        "optional verified native callbacks",
+        "no client passwords"
+      ]
+    },
+    {
+      "order": 5,
+      "path": "regional-data",
+      "state": "one independent state per region",
+      "covers": [
+        "per-service PostgreSQL roles/grants",
+        "PUBLIC database/schema privilege removal",
+        "Location PostGIS",
+        "private claims Blob container",
+        "30-day maximum compatibility SAS",
+        "per-service configuration in Key Vault",
+        "secret-scoped workload and TLS permissions",
+        "PFX import"
+      ]
+    },
+    {
+      "order": 6,
+      "path": "workloads",
+      "state": "one independent state per region",
+      "covers": [
+        "nine EF migration jobs",
+        "nine service Deployments and YARP",
+        "three SPA Deployments",
+        "internal LoadBalancer and nginx routing",
+        "Key Vault CSI configuration",
+        "OpenTelemetry collector",
+        "restricted pod security and network policies"
+      ]
+    },
+    {
+      "order": 7,
+      "path": "edge",
+      "state": "global/edge",
+      "covers": [
+        "four Application Gateway WAF_v2 entries",
+        "TLS/host allowlist/Prevention policy",
+        "Geographic to Priority Traffic Manager DNS",
+        "four application CNAMEs/delegated DNS zone",
+        "default-denied WAF publication and DNS endpoints",
+        "readiness guards and optional recovery FQDNs"
+      ]
+    }
+  ],
+  "diagram_mapping": [
+    {
+      "view": "03-global-multiregion",
+      "published_source": "assets/architecture/03-global-multiregion.drawio",
+      "roots": [
+        "platform",
+        "edge"
+      ],
+      "limit": "DNS selection only; no home-region writer routing or cross-region data recovery."
+    },
+    {
+      "view": "04-regional-aks",
+      "published_source": "assets/architecture/04-regional-aks.drawio",
+      "roots": [
+        "platform",
+        "regional-data",
+        "workloads",
+        "edge"
+      ],
+      "limit": "Proposed sizing, ports, network controls and private SPA hosting are concrete code choices; not deployed."
+    },
+    {
+      "view": "02-service-landscape",
+      "published_source": "assets/architecture/02-service-landscape.drawio",
+      "roots": [
+        "regional-data",
+        "workloads"
+      ],
+      "limit": "Nine data owners; one physical PostgreSQL server per stamp, nine private logical databases."
+    },
+    {
+      "view": "18-entra-login",
+      "roots": [
+        "tenant",
+        "identity"
+      ],
+      "limit": "Registrations only. Existing HMAC auth, demo seeding and client session behavior still need migration."
+    },
+    {
+      "view": "19-client-applications",
+      "published_source": "assets/architecture/19-client-applications.drawio",
+      "roots": [
+        "workloads"
+      ],
+      "limit": "Private SPA hosting added; no client behavior or native build/signing changed."
+    }
+  ],
+  "supporting_delivery": {
+    "container_recipes": 3,
+    "release_images": 22,
+    "operator_input_examples": 7,
+    "backend_examples": 7,
+    "reusable_modules": [
+      "modules/regional",
+      "modules/identity",
+      "modules/edge"
+    ],
+    "ci": ".github/workflows/terraform.yml"
+  },
+  "validation": {
+    "receipt": "infrastructure/terraform/validation.json",
+    "checked_at_utc": "2026-11-06T10:15:00.481349+00:00",
+    "roots_validated": 7,
+    "modules_validated": 3,
+    "mocked_plan_tests_passed": 17,
+    "python_tests_passed": 2,
+    "actual_azure_plan": false,
+    "azure_apply": false,
+    "container_build": false,
+    "followup_receipt": "infrastructure/terraform/environments/validation.json",
+    "followup_checked_at_utc": "2026-11-06T19:41:15.832481+00:00",
+    "current_mocked_plan_cases_covered": 20,
+    "followup_mocked_plans_passed": 7,
+    "unchanged_baseline_mocked_plans_reused": 13,
+    "followup_python_tests_passed": 5,
+    "readme_pngs_verified": 9,
+    "evidence_strategy": "Focused checks for changed roots/profiles/media; unchanged baseline evidence retained."
+  },
+  "remaining_runtime_work": [
+    "Azure subscription/region/SKU/quota/private-path validation",
+    "real domains/TLS inputs and identity tenant policy/onboarding",
+    "Entra application/account/role migration and demo seed removal",
+    "single-writer home-region routing/fencing and global identity",
+    "SignalR backplane/session/rate-limit and replica/rolling-migration semantics",
+    "cross-region database/message/object recovery, RTO/RPO, residency and drills",
+    "replace compatibility Blob SAS with workload-identity SDK and coordinate credential rotation"
+  ],
+  "release_status": "R9 remains partial. Infrastructure source tasks are complete; cloud/runtime delivery is not complete.",
+  "environment_profiles": {
+    "status": "configuration_created_not_deployed",
+    "guide": "infrastructure/terraform/environments/README.md",
+    "profiles": {
+      "dev": {
+        "path": "infrastructure/terraform/environments/dev/profile.json",
+        "stage_entries": 7,
+        "regions": 1
+      },
+      "qa": {
+        "path": "infrastructure/terraform/environments/qa/profile.json",
+        "stage_entries": 7,
+        "regions": 1
+      },
+      "prod": {
+        "path": "infrastructure/terraform/environments/prod/profile.json",
+        "stage_entries": 13,
+        "regions": 4
+      }
+    },
+    "isolation": [
+      "independent state account/key examples",
+      "disjoint VNet ranges",
+      "environment-specific resource and registration prefixes",
+      "environment-specific DNS and telemetry labels"
+    ],
+    "environment_stage_entries": 27,
+    "additional_input_examples": 27,
+    "additional_backend_examples": 27,
+    "publication": "disabled at WAF and Traffic Manager in all profiles",
+    "bootstrap_local_state": "requires dedicated protected deployment copy per environment before backend migration"
+  }
+}

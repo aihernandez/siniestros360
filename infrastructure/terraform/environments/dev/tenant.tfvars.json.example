@@ -1,0 +1,7 @@
+{
+  "subscription_id": "00000000-0000-0000-0000-000000000001",
+  "name": "s360devcustomersREPLACE",
+  "country_code": "US",
+  "data_residency_location": "United States",
+  "resource_group_location": "centralus"
+}

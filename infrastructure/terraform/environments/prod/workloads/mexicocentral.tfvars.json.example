@@ -1,0 +1,44 @@
+{
+  "subscription_id": "00000000-0000-0000-0000-000000000001",
+  "region_key": "mexicocentral",
+  "state": {
+    "resource_group_name": "rg-s360prodstate000000-tfstate",
+    "storage_account_name": "s360prodstate000000",
+    "container_name": "tfstate",
+    "platform_key": "prod/platform.tfstate"
+  },
+  "data_state_key": "prod/regional-data/mexicocentral.tfstate",
+  "base_domain": "claims.example.com",
+  "release_id": "prod-REPLACE_RELEASE",
+  "service_images": {
+    "identity": "YOURACR.azurecr.io/siniestros360/identity:REPLACE_RELEASE",
+    "claims": "YOURACR.azurecr.io/siniestros360/claims:REPLACE_RELEASE",
+    "adjusters": "YOURACR.azurecr.io/siniestros360/adjusters:REPLACE_RELEASE",
+    "location": "YOURACR.azurecr.io/siniestros360/location:REPLACE_RELEASE",
+    "dispatch": "YOURACR.azurecr.io/siniestros360/dispatch:REPLACE_RELEASE",
+    "policy": "YOURACR.azurecr.io/siniestros360/policy:REPLACE_RELEASE",
+    "sla": "YOURACR.azurecr.io/siniestros360/sla:REPLACE_RELEASE",
+    "documents": "YOURACR.azurecr.io/siniestros360/documents:REPLACE_RELEASE",
+    "operations": "YOURACR.azurecr.io/siniestros360/operations:REPLACE_RELEASE",
+    "gateway": "YOURACR.azurecr.io/siniestros360/gateway:REPLACE_RELEASE"
+  },
+  "migration_images": {
+    "identity": "YOURACR.azurecr.io/siniestros360/identity-migration:REPLACE_RELEASE",
+    "claims": "YOURACR.azurecr.io/siniestros360/claims-migration:REPLACE_RELEASE",
+    "adjusters": "YOURACR.azurecr.io/siniestros360/adjusters-migration:REPLACE_RELEASE",
+    "location": "YOURACR.azurecr.io/siniestros360/location-migration:REPLACE_RELEASE",
+    "dispatch": "YOURACR.azurecr.io/siniestros360/dispatch-migration:REPLACE_RELEASE",
+    "policy": "YOURACR.azurecr.io/siniestros360/policy-migration:REPLACE_RELEASE",
+    "sla": "YOURACR.azurecr.io/siniestros360/sla-migration:REPLACE_RELEASE",
+    "documents": "YOURACR.azurecr.io/siniestros360/documents-migration:REPLACE_RELEASE",
+    "operations": "YOURACR.azurecr.io/siniestros360/operations-migration:REPLACE_RELEASE"
+  },
+  "frontend_images": {
+    "insured-app": "YOURACR.azurecr.io/siniestros360/insured-app:REPLACE_RELEASE",
+    "adjuster-app": "YOURACR.azurecr.io/siniestros360/adjuster-app:REPLACE_RELEASE",
+    "control-tower": "YOURACR.azurecr.io/siniestros360/control-tower:REPLACE_RELEASE"
+  },
+  "proxy_image": "YOURACR.azurecr.io/ops/nginx-unprivileged:REPLACE_PIN",
+  "collector_image": "YOURACR.azurecr.io/ops/otelcol-contrib:REPLACE_PIN",
+  "environment": "prod"
+}

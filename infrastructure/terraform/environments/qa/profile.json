@@ -1,0 +1,61 @@
+{
+  "environment": "qa",
+  "status": "configuration_created_not_deployed",
+  "regions": [
+    "mexicocentral"
+  ],
+  "domain_example": "qa.claims.example.com",
+  "state_account_example": "s360qastate000000",
+  "input_policy": "Copy .example files to ignored local files; replace IDs, DNS, images and dates. PFX/password are supplied through protected environment variables.",
+  "stages": [
+    {
+      "root": "bootstrap",
+      "region": null,
+      "inputs": "bootstrap.tfvars.json.example",
+      "backend": "backends/bootstrap.tfbackend.example",
+      "state_key": "qa/bootstrap.tfstate"
+    },
+    {
+      "root": "platform",
+      "region": null,
+      "inputs": "platform.tfvars.json.example",
+      "backend": "backends/platform.tfbackend.example",
+      "state_key": "qa/platform.tfstate"
+    },
+    {
+      "root": "tenant",
+      "region": null,
+      "inputs": "tenant.tfvars.json.example",
+      "backend": "backends/tenant.tfbackend.example",
+      "state_key": "qa/tenant.tfstate"
+    },
+    {
+      "root": "identity",
+      "region": null,
+      "inputs": "identity.tfvars.json.example",
+      "backend": "backends/identity.tfbackend.example",
+      "state_key": "qa/identity.tfstate"
+    },
+    {
+      "root": "edge",
+      "region": null,
+      "inputs": "edge.tfvars.json.example",
+      "backend": "backends/edge.tfbackend.example",
+      "state_key": "qa/edge.tfstate"
+    },
+    {
+      "root": "regional-data",
+      "region": "mexicocentral",
+      "inputs": "regional-data/mexicocentral.tfvars.json.example",
+      "backend": "backends/regional-data/mexicocentral.tfbackend.example",
+      "state_key": "qa/regional-data/mexicocentral.tfstate"
+    },
+    {
+      "root": "workloads",
+      "region": "mexicocentral",
+      "inputs": "workloads/mexicocentral.tfvars.json.example",
+      "backend": "backends/workloads/mexicocentral.tfbackend.example",
+      "state_key": "qa/workloads/mexicocentral.tfstate"
+    }
+  ]
+}

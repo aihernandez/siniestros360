@@ -1,0 +1,23 @@
+{
+  "subscription_id": "00000000-0000-0000-0000-000000000001",
+  "base_domain": "claims.example.com",
+  "name": "s360-reference",
+  "state": {
+    "resource_group_name": "rg-YOURSTATE-tfstate",
+    "storage_account_name": "YOURSTATE",
+    "container_name": "tfstate",
+    "platform_key": "reference/platform.tfstate"
+  },
+  "data_keys": {
+    "centralus": "reference/data/centralus.tfstate",
+    "francecentral": "reference/data/francecentral.tfstate",
+    "mexicocentral": "reference/data/mexicocentral.tfstate",
+    "chilecentral": "reference/data/chilecentral.tfstate"
+  },
+  "enable_public_traffic": false,
+  "application_readiness_confirmed": false,
+  "ownership_routing_confirmed": false,
+  "world_fallback_region": null,
+  "recovery_targets": {},
+  "recovery_ready_regions": []
+}

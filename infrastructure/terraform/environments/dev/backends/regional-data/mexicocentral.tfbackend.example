@@ -1,0 +1,5 @@
+resource_group_name = "rg-s360devstate000000-tfstate"
+storage_account_name = "s360devstate000000"
+container_name = "tfstate"
+key = "dev/regional-data/mexicocentral.tfstate"
+use_azuread_auth = true
