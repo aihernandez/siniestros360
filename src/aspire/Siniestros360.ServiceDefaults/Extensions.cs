@@ -214,8 +214,8 @@ public static class Extensions
 
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
-        // Se exponen en todos los ambientes: Aspire y Azure Container Apps los usan como readiness/liveness.
-        // Sólo devuelven el estado agregado (Healthy/Unhealthy), sin detalle interno.
+        // Exposed in every environment for Aspire and AKS readiness/liveness probes.
+        // Return only aggregate status (Healthy/Unhealthy), without internal details.
         app.MapHealthChecks(HealthEndpointPath).AllowAnonymous();
         app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
         {

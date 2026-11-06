@@ -1,0 +1,108 @@
+{
+  "purpose": "Local self-contained technology badges",
+  "source_project": "https://github.com/devicons/devicon",
+  "badges": [
+    {
+      "file": "dotnet.svg",
+      "technology": ".NET 10",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/dotnetcore/dotnetcore-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "csharp.svg",
+      "technology": "C#",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/csharp/csharp-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "aspire.svg",
+      "technology": "Aspire 13.5",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/dotnetcore/dotnetcore-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "react.svg",
+      "technology": "React 19",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "typescript.svg",
+      "technology": "TypeScript 6",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/typescript/typescript-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "vite.svg",
+      "technology": "Vite 8",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/vitejs/vitejs-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "capacitor.svg",
+      "technology": "Capacitor 8",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/capacitor/capacitor-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "postgresql.svg",
+      "technology": "PostgreSQL 16",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/postgresql/postgresql-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "postgis.svg",
+      "technology": "PostGIS",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/postgresql/postgresql-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "masstransit.svg",
+      "technology": "MassTransit 8",
+      "icon_source": null,
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "signalr.svg",
+      "technology": "SignalR",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/dotnetcore/dotnetcore-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "opentelemetry.svg",
+      "technology": "OpenTelemetry",
+      "icon_source": null,
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "docker.svg",
+      "technology": "Docker",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "kubernetes.svg",
+      "technology": "Kubernetes",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/kubernetes/kubernetes-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "azure.svg",
+      "technology": "Azure / AKS",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/azure/azure-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "terraform.svg",
+      "technology": "Terraform",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/terraform/terraform-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    },
+    {
+      "file": "githubactions.svg",
+      "technology": "GitHub Actions",
+      "icon_source": "https://raw.githubusercontent.com/devicons/devicon/master/icons/githubactions/githubactions-original.svg",
+      "icon_note": "Original upstream icon, or a generic category symbol where no icon was fetched; brand/trademark terms remain upstream."
+    }
+  ]
+}
