@@ -1,0 +1,302 @@
+{
+  "checked_at_utc": "2026-11-06T20:25:56.952390+00:00",
+  "scope": "Local syntax/provider schemas and mocked plans only; no real Azure plan/apply or image build.",
+  "checks": [
+    {
+      "directory": "infrastructure/terraform",
+      "command": [
+        "terraform.exe",
+        "fmt",
+        "-check",
+        "-recursive"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": ".",
+      "command": [
+        "python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "infrastructure/scripts",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/bootstrap",
+      "command": [
+        "terraform.exe",
+        "init",
+        "-backend=false",
+        "-input=false",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/bootstrap",
+      "command": [
+        "terraform.exe",
+        "validate",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/bootstrap",
+      "command": [
+        "terraform.exe",
+        "test",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/platform",
+      "command": [
+        "terraform.exe",
+        "init",
+        "-backend=false",
+        "-input=false",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/platform",
+      "command": [
+        "terraform.exe",
+        "validate",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/platform",
+      "command": [
+        "terraform.exe",
+        "test",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/tenant",
+      "command": [
+        "terraform.exe",
+        "init",
+        "-backend=false",
+        "-input=false",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/tenant",
+      "command": [
+        "terraform.exe",
+        "validate",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/identity",
+      "command": [
+        "terraform.exe",
+        "init",
+        "-backend=false",
+        "-input=false",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/identity",
+      "command": [
+        "terraform.exe",
+        "validate",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/regional-data",
+      "command": [
+        "terraform.exe",
+        "init",
+        "-backend=false",
+        "-input=false",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/regional-data",
+      "command": [
+        "terraform.exe",
+        "validate",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/regional-data",
+      "command": [
+        "terraform.exe",
+        "test",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/workloads",
+      "command": [
+        "terraform.exe",
+        "init",
+        "-backend=false",
+        "-input=false",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/workloads",
+      "command": [
+        "terraform.exe",
+        "validate",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/workloads",
+      "command": [
+        "terraform.exe",
+        "test",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/edge",
+      "command": [
+        "terraform.exe",
+        "init",
+        "-backend=false",
+        "-input=false",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/edge",
+      "command": [
+        "terraform.exe",
+        "validate",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/edge",
+      "command": [
+        "terraform.exe",
+        "test",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/modules/regional",
+      "command": [
+        "terraform.exe",
+        "init",
+        "-backend=false",
+        "-input=false",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/modules/regional",
+      "command": [
+        "terraform.exe",
+        "validate",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/modules/regional",
+      "command": [
+        "terraform.exe",
+        "test",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/modules/identity",
+      "command": [
+        "terraform.exe",
+        "init",
+        "-backend=false",
+        "-input=false",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/modules/identity",
+      "command": [
+        "terraform.exe",
+        "validate",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/modules/identity",
+      "command": [
+        "terraform.exe",
+        "test",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/modules/edge",
+      "command": [
+        "terraform.exe",
+        "init",
+        "-backend=false",
+        "-input=false",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/modules/edge",
+      "command": [
+        "terraform.exe",
+        "validate",
+        "-no-color"
+      ],
+      "exit_code": 0
+    },
+    {
+      "directory": "infrastructure/terraform/modules/edge",
+      "command": [
+        "terraform.exe",
+        "test",
+        "-no-color"
+      ],
+      "exit_code": 0
+    }
+  ]
+}

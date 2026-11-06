@@ -27,3 +27,19 @@ src/gateway/*/Properties/launchSettings.json
 docs/
 PRODUCT.md
 PARKING_LOT.md
+
+# Terraform runtime state and operator inputs; dependency locks and examples stay versioned.
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfbackend
+*.tfvars
+*.tfvars.json
+*.auto.tfvars.json
+crash.log
+infrastructure/**/*.pfx
+infrastructure/**/*.p12
+infrastructure/**/__pycache__/
+infrastructure/.local/
+scripts/__pycache__/

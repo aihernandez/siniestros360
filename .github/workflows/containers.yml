@@ -1,0 +1,35 @@
+name: Container recipes
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ['src/**', 'apps/**', 'infrastructure/**', 'Directory.*.props', '.dockerignore', '.github/workflows/containers.yml']
+  push:
+    branches: [main]
+    paths: ['src/**', 'apps/**', 'infrastructure/**', 'Directory.*.props', '.dockerignore', '.github/workflows/containers.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [service_images, migration_images, frontend_images]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build release images locally on the runner without registry credentials
+        run: >-
+          python infrastructure/scripts/build_images.py
+          --registry example.azurecr.io --release ci-${{ github.sha }}
+          --sdk mcr.microsoft.com/dotnet/sdk:10.0
+          --runtime mcr.microsoft.com/dotnet/aspnet:10.0
+          --node node:22-bookworm-slim
+          --nginx nginxinc/nginx-unprivileged:1.28-alpine
+          --output release.auto.tfvars.json --build --group ${{ matrix.group }}

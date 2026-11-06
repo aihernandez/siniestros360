@@ -1,0 +1,5 @@
+resource_group_name = "rg-s360qastate000000-tfstate"
+storage_account_name = "s360qastate000000"
+container_name = "tfstate"
+key = "qa/tenant.tfstate"
+use_azuread_auth = true

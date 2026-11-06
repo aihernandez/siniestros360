@@ -1,0 +1,5 @@
+resource_group_name  = "rg-YOURSTATE-tfstate"
+storage_account_name = "YOURSTATE"
+container_name       = "tfstate"
+key                  = "reference/edge.tfstate"
+use_azuread_auth     = true

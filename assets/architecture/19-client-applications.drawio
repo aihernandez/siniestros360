@@ -1,0 +1,167 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net">
+  <diagram id="19-client-applications" name="Client applications and consoles">
+    <mxGraphModel page="1" pageWidth="1500" pageHeight="1370">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="canvas" parent="1" vertex="1" value="" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=19;fontColor=#203344;fillColor=#F6FAFF;strokeColor=none;spacing=12;">
+          <mxGeometry x="0" y="0" width="1500" height="1370" as="geometry" />
+        </mxCell>
+        <mxCell id="title" parent="1" vertex="1" value="Client applications and consoles" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=31;fontColor=#203344;fillColor=none;strokeColor=none;spacing=12;text;align=left;spacing=0;fontStyle=1;fontColor=#203344;">
+          <mxGeometry x="35" y="24" width="1430" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" vertex="1" value="React / Vite clients · Capacitor Android shells · HTTP and SignalR through YARP" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=19;fontColor=#203344;fillColor=none;strokeColor=none;spacing=12;text;align=left;spacing=0;fontStyle=0;fontColor=#203344;">
+          <mxGeometry x="37" y="85" width="1426" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="status" parent="1" vertex="1" value="CURRENT CODE" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=14;fontColor=#203344;fillColor=none;strokeColor=none;spacing=12;text;align=left;spacing=0;fontStyle=1;fontColor=#0078D4;">
+          <mxGeometry x="37" y="139" width="1426" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="insured-boundary" parent="1" vertex="1" value="" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=19;fontColor=#203344;fillColor=#FFFFFF;strokeColor=#A7B8C8;spacing=12;dashed=1;">
+          <mxGeometry x="25" y="200" width="460" height="490" as="geometry" />
+        </mxCell>
+        <mxCell id="insured-name" parent="1" vertex="1" value="Insured app" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=23;fontColor=#203344;fillColor=none;strokeColor=none;spacing=12;text;align=left;spacing=0;fontStyle=1;fontColor=#203344;">
+          <mxGeometry x="45" y="218" width="420" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="insured-platform" parent="1" vertex="1" value="Web / Capacitor Android" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=none;strokeColor=none;spacing=12;text;align=left;spacing=0;fontStyle=0;fontColor=#203344;">
+          <mxGeometry x="45" y="260" width="420" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="insured-ui" parent="1" vertex="1" value="&lt;b&gt;App.tsx · React UI&lt;/b&gt;&lt;br&gt;Incident report · GPS permission&lt;br&gt;Claim reference and live progress" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=#D8E7FB;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="50" y="310" width="410" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="insured-state" parent="1" vertex="1" value="&lt;b&gt;Component state and session&lt;/b&gt;&lt;br&gt;React hooks · JWT in localStorage" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=#D6E8D1;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="50" y="455" width="410" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="insured-io" parent="1" vertex="1" value="&lt;b&gt;HTTP and realtime functions&lt;/b&gt;&lt;br&gt;fetch · intentKey / settleIntent&lt;br&gt;SignalR client · reconnect handlers" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=#FFF3CD;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="50" y="575" width="410" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="insured-ui-state" parent="1" edge="1" value="" style="edgeStyle=none;html=1;strokeColor=#203344;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="255" y="410" as="sourcePoint" />
+            <mxPoint x="255" y="455" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="insured-state-io" parent="1" edge="1" value="" style="edgeStyle=none;html=1;strokeColor=#203344;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="255" y="530" as="sourcePoint" />
+            <mxPoint x="255" y="575" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="insured-gateway" parent="1" edge="1" value="" style="edgeStyle=none;html=1;strokeColor=#0078D4;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="255" y="665" as="sourcePoint" />
+            <mxPoint x="255" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="adjuster-boundary" parent="1" vertex="1" value="" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=19;fontColor=#203344;fillColor=#FFFFFF;strokeColor=#A7B8C8;spacing=12;dashed=1;">
+          <mxGeometry x="520" y="200" width="460" height="490" as="geometry" />
+        </mxCell>
+        <mxCell id="adjuster-name" parent="1" vertex="1" value="Adjuster app" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=23;fontColor=#203344;fillColor=none;strokeColor=none;spacing=12;text;align=left;spacing=0;fontStyle=1;fontColor=#203344;">
+          <mxGeometry x="540" y="218" width="420" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="adjuster-platform" parent="1" vertex="1" value="Web / Capacitor Android" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=none;strokeColor=none;spacing=12;text;align=left;spacing=0;fontStyle=0;fontColor=#203344;">
+          <mxGeometry x="540" y="260" width="420" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="adjuster-ui" parent="1" vertex="1" value="&lt;b&gt;App.tsx · React UI&lt;/b&gt;&lt;br&gt;Assigned work · arrival / start / close&lt;br&gt;Document evidence and deadlines" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=#D8E7FB;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="545" y="310" width="410" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="adjuster-state" parent="1" vertex="1" value="&lt;b&gt;Component state and session&lt;/b&gt;&lt;br&gt;React hooks · JWT in localStorage" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=#D6E8D1;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="545" y="455" width="410" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="adjuster-io" parent="1" vertex="1" value="&lt;b&gt;HTTP and realtime functions&lt;/b&gt;&lt;br&gt;fetch · intentKey / settleIntent&lt;br&gt;SignalR client · reconnect handlers" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=#FFF3CD;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="545" y="575" width="410" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="adjuster-ui-state" parent="1" edge="1" value="" style="edgeStyle=none;html=1;strokeColor=#203344;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="750" y="410" as="sourcePoint" />
+            <mxPoint x="750" y="455" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="adjuster-state-io" parent="1" edge="1" value="" style="edgeStyle=none;html=1;strokeColor=#203344;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="750" y="530" as="sourcePoint" />
+            <mxPoint x="750" y="575" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="adjuster-gateway" parent="1" edge="1" value="" style="edgeStyle=none;html=1;strokeColor=#0078D4;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="750" y="665" as="sourcePoint" />
+            <mxPoint x="750" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tower-boundary" parent="1" vertex="1" value="" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=19;fontColor=#203344;fillColor=#FFFFFF;strokeColor=#A7B8C8;spacing=12;dashed=1;">
+          <mxGeometry x="1015" y="200" width="460" height="490" as="geometry" />
+        </mxCell>
+        <mxCell id="tower-name" parent="1" vertex="1" value="Control tower" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=23;fontColor=#203344;fillColor=none;strokeColor=none;spacing=12;text;align=left;spacing=0;fontStyle=1;fontColor=#203344;">
+          <mxGeometry x="1035" y="218" width="420" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="tower-platform" parent="1" vertex="1" value="Web browser · Leaflet map" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=none;strokeColor=none;spacing=12;text;align=left;spacing=0;fontStyle=0;fontColor=#203344;">
+          <mxGeometry x="1035" y="260" width="420" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="tower-ui" parent="1" vertex="1" value="&lt;b&gt;App.tsx · React UI&lt;/b&gt;&lt;br&gt;Live map · alerts · assignment&lt;br&gt;Operational views and test claims" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=#D8E7FB;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="1040" y="310" width="410" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="tower-state" parent="1" vertex="1" value="&lt;b&gt;Component state and session&lt;/b&gt;&lt;br&gt;React hooks · JWT in localStorage" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=#D6E8D1;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="1040" y="455" width="410" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="tower-io" parent="1" vertex="1" value="&lt;b&gt;HTTP and realtime functions&lt;/b&gt;&lt;br&gt;fetch · intentKey / settleIntent&lt;br&gt;SignalR client · reconnect handlers" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=17;fontColor=#203344;fillColor=#FFF3CD;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="1040" y="575" width="410" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="tower-ui-state" parent="1" edge="1" value="" style="edgeStyle=none;html=1;strokeColor=#203344;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1245" y="410" as="sourcePoint" />
+            <mxPoint x="1245" y="455" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tower-state-io" parent="1" edge="1" value="" style="edgeStyle=none;html=1;strokeColor=#203344;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1245" y="530" as="sourcePoint" />
+            <mxPoint x="1245" y="575" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tower-gateway" parent="1" edge="1" value="" style="edgeStyle=none;html=1;strokeColor=#0078D4;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1245" y="665" as="sourcePoint" />
+            <mxPoint x="1245" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="client-routing" parent="1" vertex="1" value="&lt;b&gt;Client routing&lt;/b&gt; · Vite proxy for /api and /hubs in development, or configured VITE_GATEWAY_URL&lt;br&gt;Repeated patterns live in each app; these boxes do not imply a shared frontend package." style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;fillColor=#E3F1EA;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="70" y="750" width="1360" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="yarp" parent="1" vertex="1" value="&lt;b&gt;YARP gateway&lt;/b&gt; · versioned HTTP APIs and /hubs/operations&lt;br&gt;Authentication · routing · role/resource checks continue inside services" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=19;fontColor=#203344;fillColor=#D8E7FB;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="250" y="905" width="1000" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="routing-gateway" parent="1" edge="1" value="HTTP / WebSocket" style="edgeStyle=none;html=1;strokeColor=#0078D4;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="750" y="835" as="sourcePoint" />
+            <mxPoint x="750" y="905" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="business" parent="1" vertex="1" value="&lt;b&gt;Business service APIs&lt;/b&gt;&lt;br&gt;Identity · Claims · Adjusters · Location · Dispatch · Documents" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;fillColor=#E2D4E8;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="75" y="1060" width="630" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="operations" parent="1" vertex="1" value="&lt;b&gt;Operations API / SignalR hub&lt;/b&gt;&lt;br&gt;Event-fed read projections · authorized snapshots" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;fillColor=#E2D4E8;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="795" y="1060" width="630" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="gateway-business" parent="1" edge="1" value="" style="edgeStyle=none;html=1;strokeColor=#203344;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="990" as="sourcePoint" />
+            <mxPoint x="500" y="1060" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gateway-operations" parent="1" edge="1" value="" style="edgeStyle=none;html=1;strokeColor=#8063A3;strokeWidth=1.7;dashed=0;endArrow=block;endFill=1;fontFamily=Segoe UI;fontSize=15;labelBackgroundColor=#F6FAFF;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1000" y="990" as="sourcePoint" />
+            <mxPoint x="1000" y="1060" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="aspire" parent="1" vertex="1" value="&lt;b&gt;Aspire dashboard · developer diagnostics&lt;/b&gt;&lt;br&gt;AppHost resources, health, traces and logs · local operational UI, outside customer request routing" style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=18;fontColor=#203344;fillColor=#F1E7F7;strokeColor=#A7B8C8;spacing=12;">
+          <mxGeometry x="75" y="1220" width="1350" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="scope" parent="1" vertex="1" value="Logical responsibilities within the current App.tsx components, not separate libraries. Frontend AKS-era hosting and Entra migration remain open." style="rounded=1;arcSize=8;html=1;whiteSpace=wrap;fontFamily=Segoe UI;fontSize=16;fontColor=#203344;fillColor=none;strokeColor=none;spacing=12;text;align=left;spacing=0;fontStyle=0;fontColor=#203344;">
+          <mxGeometry x="40" y="1320" width="1420" height="35" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,25 @@
+{
+  "subscription_id": "00000000-0000-0000-0000-000000000001",
+  "base_domain": "qa.claims.example.com",
+  "name": "s360-qa",
+  "state": {
+    "resource_group_name": "rg-s360qastate000000-tfstate",
+    "storage_account_name": "s360qastate000000",
+    "container_name": "tfstate",
+    "platform_key": "qa/platform.tfstate"
+  },
+  "data_keys": {
+    "mexicocentral": "qa/regional-data/mexicocentral.tfstate"
+  },
+  "enable_public_traffic": false,
+  "application_readiness_confirmed": false,
+  "ownership_routing_confirmed": false,
+  "world_fallback_region": null,
+  "recovery_targets": {},
+  "recovery_ready_regions": [],
+  "geographies": {
+    "mexicocentral": [
+      "WORLD"
+    ]
+  }
+}

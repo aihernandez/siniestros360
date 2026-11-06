@@ -1,0 +1,54 @@
+{
+  "subscription_id": "00000000-0000-0000-0000-000000000001",
+  "tenant_id": "00000000-0000-0000-0000-000000000001",
+  "operator_object_id": "00000000-0000-0000-0000-000000000001",
+  "admin_group_object_ids": [
+    "00000000-0000-0000-0000-000000000001"
+  ],
+  "alert_email": "operations@example.com",
+  "name_prefix": "s360",
+  "environment": "prod",
+  "kubernetes_version": null,
+  "regions": {
+    "centralus": {
+      "location": "centralus",
+      "vnet_cidr": "10.40.0.0/16",
+      "zones": [
+        "1",
+        "2",
+        "3"
+      ],
+      "postgres_zone_redundant": true
+    },
+    "francecentral": {
+      "location": "francecentral",
+      "vnet_cidr": "10.41.0.0/16",
+      "zones": [
+        "1",
+        "2",
+        "3"
+      ],
+      "postgres_zone_redundant": true
+    },
+    "mexicocentral": {
+      "location": "mexicocentral",
+      "vnet_cidr": "10.42.0.0/16",
+      "zones": [
+        "1",
+        "2",
+        "3"
+      ],
+      "postgres_zone_redundant": false
+    },
+    "chilecentral": {
+      "location": "chilecentral",
+      "vnet_cidr": "10.43.0.0/16",
+      "zones": [
+        "1",
+        "2",
+        "3"
+      ],
+      "postgres_zone_redundant": true
+    }
+  }
+}

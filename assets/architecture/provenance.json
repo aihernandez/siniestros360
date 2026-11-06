@@ -1,0 +1,116 @@
+{
+  "purpose": "README publication copies",
+  "assets": [
+    {
+      "path": "assets/architecture/02-service-landscape.png",
+      "source": "docs/diagrams/official/02-service-landscape.png",
+      "sha256": "8048a889de0e7479e32243f017753853f03b74372c1ab911ae5fe97bda4c8cca"
+    },
+    {
+      "path": "assets/architecture/02-service-landscape.svg",
+      "source": "docs/diagrams/official/02-service-landscape.svg",
+      "sha256": "b377425f10ce046caa90d18f8d509fed73629f8faf98680e7b5b4f99848e032f"
+    },
+    {
+      "path": "assets/architecture/02-service-landscape.drawio",
+      "source": "docs/diagrams/official/02-service-landscape.drawio",
+      "sha256": "c3b2a3ee81eaaae020491082097883eade8a982e86492f9370947264748301f5"
+    },
+    {
+      "path": "assets/architecture/03-global-multiregion.png",
+      "source": "docs/diagrams/official/03-global-multiregion.png",
+      "sha256": "df1dce83d0e1364d3739eda70f0fcf93890d64a880fe0dbc2ca4a7ab8da71133"
+    },
+    {
+      "path": "assets/architecture/03-global-multiregion.svg",
+      "source": "docs/diagrams/official/03-global-multiregion.svg",
+      "sha256": "b2e988464acab43cc3e965b3a3884193c491030e5752033f6405496db02df6f9"
+    },
+    {
+      "path": "assets/architecture/03-global-multiregion.drawio",
+      "source": "docs/diagrams/official/03-global-multiregion.drawio",
+      "sha256": "ae5d42ade6f3afa29f9760bf8a82e9f1db04f9e9b94eb5d326a35ba20472f5d8"
+    },
+    {
+      "path": "assets/architecture/04-regional-aks.png",
+      "source": "docs/diagrams/official/04-regional-aks.png",
+      "sha256": "aed5a1914bd7eab9d91acdf5b18376c02d0e11ee1bb9ecb110c9a9e2d2f2d490"
+    },
+    {
+      "path": "assets/architecture/04-regional-aks.svg",
+      "source": "docs/diagrams/official/04-regional-aks.svg",
+      "sha256": "6967ba85e0877243612654932e7b5e48b6b0acfa86b15480c6920cbdae2c9ded"
+    },
+    {
+      "path": "assets/architecture/04-regional-aks.drawio",
+      "source": "docs/diagrams/official/04-regional-aks.drawio",
+      "sha256": "d283ec16c2601084e92b8d943139f6295ae8ef371395014ff6c25d66964c2aa1"
+    },
+    {
+      "path": "assets/architecture/06-internal-claims.png",
+      "source": "docs/diagrams/official/06-internal-claims.png",
+      "sha256": "3eea4ae4528be3ee9d9e8c7284e892ed57051c27c13fe04505eff40f1ea2c80a"
+    },
+    {
+      "path": "assets/architecture/06-internal-claims.svg",
+      "source": "docs/diagrams/official/06-internal-claims.svg",
+      "sha256": "0ff4c90fcb9e1d8501389548bb466dfcf8a9112f5b6692acd05cd5b4e8d34429"
+    },
+    {
+      "path": "assets/architecture/06-internal-claims.drawio",
+      "source": "docs/diagrams/official/06-internal-claims.drawio",
+      "sha256": "dbaedc99ae294c1c36fb50d86841cd3cfda9fc1e08e5048bd163c38139467746"
+    },
+    {
+      "path": "assets/architecture/19-client-applications.png",
+      "source": "docs/diagrams/official/19-client-applications.png",
+      "sha256": "ccdeb48270b1d03655777d9dafbeeb1332f8247137a8c494477fb9cab9bd1d8b"
+    },
+    {
+      "path": "assets/architecture/19-client-applications.svg",
+      "source": "docs/diagrams/official/19-client-applications.svg",
+      "sha256": "93a2daf57751d249ab5b9f019570c8fe55df89a179c6dc27b99adc765c8fa61c"
+    },
+    {
+      "path": "assets/architecture/19-client-applications.drawio",
+      "source": "docs/diagrams/official/19-client-applications.drawio",
+      "sha256": "23e2d2d3f08e7a767c060af841f4be28aff5d1bd244582f9d11a76b0d987c272"
+    },
+    {
+      "path": "assets/screenshots/control-tower.png",
+      "source": "tests/e2e/screenshots/06-torre-siniestro-asignado.png",
+      "sha256": "baf7a29c775b1bdd8d8d9e2b642719427c677b00ff298cb09cfb563c92cbfe28",
+      "evidence": "historical demo capture; no fresh runtime run"
+    },
+    {
+      "path": "assets/screenshots/insured-app.png",
+      "source": "tests/e2e/screenshots/05-asegurado-asignado.png",
+      "sha256": "8ae430d694e91c47f5d47f26e3bec189ad136d45828cdb57e421c009aca8d207",
+      "evidence": "historical demo capture; no fresh runtime run"
+    },
+    {
+      "path": "assets/screenshots/adjuster-app.png",
+      "source": "tests/e2e/screenshots/07-ajustador-asignacion.png",
+      "sha256": "1afb36a1fccd7b211f29847bad825e635cd579b29936cf6882d214e6ae9d028d",
+      "evidence": "historical demo capture; no fresh runtime run"
+    },
+    {
+      "path": "assets/architecture/20-azure-components.png",
+      "source": "infrastructure/terraform/coverage.json",
+      "sha256": "0b6b458a5b4b6024ea1a941a5cfe8d9213f732ff40bed823a8c8210d27bdf362",
+      "evidence": "Additional editable README relationship view derived from authored Terraform; not deployed Azure evidence"
+    },
+    {
+      "path": "assets/architecture/20-azure-components.svg",
+      "source": "infrastructure/terraform/coverage.json",
+      "sha256": "98cd8015d5a3d65364da9a006167da2db5d9a158e14e7499375449ce0deb512a",
+      "evidence": "Additional editable README relationship view derived from authored Terraform; not deployed Azure evidence"
+    },
+    {
+      "path": "assets/architecture/20-azure-components.drawio",
+      "source": "infrastructure/terraform/coverage.json",
+      "sha256": "2452c9dc2794190256b7b0d6dae7bedb70ad6a1803b2f57add012bd25157b6ba",
+      "evidence": "Additional editable README relationship view derived from authored Terraform; not deployed Azure evidence"
+    }
+  ]
+}

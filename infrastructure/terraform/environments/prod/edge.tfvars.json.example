@@ -1,0 +1,37 @@
+{
+  "subscription_id": "00000000-0000-0000-0000-000000000001",
+  "base_domain": "claims.example.com",
+  "name": "s360-prod",
+  "state": {
+    "resource_group_name": "rg-s360prodstate000000-tfstate",
+    "storage_account_name": "s360prodstate000000",
+    "container_name": "tfstate",
+    "platform_key": "prod/platform.tfstate"
+  },
+  "data_keys": {
+    "centralus": "prod/regional-data/centralus.tfstate",
+    "francecentral": "prod/regional-data/francecentral.tfstate",
+    "mexicocentral": "prod/regional-data/mexicocentral.tfstate",
+    "chilecentral": "prod/regional-data/chilecentral.tfstate"
+  },
+  "enable_public_traffic": false,
+  "application_readiness_confirmed": false,
+  "ownership_routing_confirmed": false,
+  "world_fallback_region": null,
+  "recovery_targets": {},
+  "recovery_ready_regions": [],
+  "geographies": {
+    "centralus": [
+      "GEO-NA"
+    ],
+    "francecentral": [
+      "GEO-EU"
+    ],
+    "mexicocentral": [
+      "MX"
+    ],
+    "chilecentral": [
+      "GEO-SA"
+    ]
+  }
+}

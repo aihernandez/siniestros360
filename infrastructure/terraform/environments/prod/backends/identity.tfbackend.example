@@ -1,0 +1,5 @@
+resource_group_name = "rg-s360prodstate000000-tfstate"
+storage_account_name = "s360prodstate000000"
+container_name = "tfstate"
+key = "prod/identity.tfstate"
+use_azuread_auth = true
