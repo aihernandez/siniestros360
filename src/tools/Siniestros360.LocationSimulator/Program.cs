@@ -20,6 +20,8 @@ builder.Services
     .Validate(options => !options.Forwarding.Enabled ||
                          Uri.TryCreate(options.Forwarding.Endpoint, UriKind.Absolute, out _),
         "Simulator:Forwarding:Endpoint debe ser una URL absoluta cuando el reenvío está habilitado.")
+    .Validate(options => !options.Forwarding.Enabled || !string.IsNullOrWhiteSpace(options.Forwarding.Password),
+        "Simulator:Forwarding:Password must be supplied when forwarding is enabled.")
     .ValidateOnStart();
 
 builder.Services.ConfigureHttpJsonOptions(options =>

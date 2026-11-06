@@ -46,7 +46,7 @@ const upsert = <T,>(items: T[], item: T, key: (value: T) => string) => { const i
 export function App() {
   const [token, setToken] = useState(() => localStorage.getItem(tokenKey) ?? '')
   const [email, setEmail] = useState('tower.demo@demo.com')
-  const [password, setPassword] = useState('Demo!2026')
+  const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
   const [adjusters, setAdjusters] = useState<AdjusterView[]>([])
   const [claims, setClaims] = useState<ClaimView[]>([])
@@ -123,7 +123,7 @@ export function App() {
     localStorage.setItem(tokenKey, session.accessToken); setToken(session.accessToken); setMessage('')
   }
 
-  if (!token) return <main className="control-shell"><header className="control-header"><div className="brand"><h1>Siniestros360</h1><span>Torre de control</span></div></header><section className="operations-sidebar" style={{ margin: '4rem auto', maxWidth: 480 }}><form className="tab-content test-form" onSubmit={event => { event.preventDefault(); void login() }}><label>Correo<input value={email} onChange={e => setEmail(e.target.value)} /></label><label>Contraseña<input type="password" value={password} onChange={e => setPassword(e.target.value)} /></label><button className="submit-claim">Entrar</button>{message && <p className="form-help">{message}</p>}<small className="form-help">tower.demo@demo.com / Demo!2026</small></form></section></main>
+  if (!token) return <main className="control-shell"><header className="control-header"><div className="brand"><h1>Siniestros360</h1><span>Torre de control</span></div></header><section className="operations-sidebar" style={{ margin: '4rem auto', maxWidth: 480 }}><form className="tab-content test-form" onSubmit={event => { event.preventDefault(); void login() }}><label>Correo<input value={email} onChange={e => setEmail(e.target.value)} /></label><label>Contraseña<input type="password" value={password} onChange={e => setPassword(e.target.value)} /></label><button className="submit-claim">Entrar</button>{message && <p className="form-help">{message}</p>}<small className="form-help">Usa las credenciales configuradas para tu demostración local.</small></form></section></main>
 
   return <main className="control-shell">
     <header className="control-header">

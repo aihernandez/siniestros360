@@ -18,7 +18,7 @@ const wait = (milliseconds: number) => new Promise(resolve => window.setTimeout(
 export function App() {
   const [token, setToken] = useState(() => localStorage.getItem('s360.insured.token') ?? '')
   const [email, setEmail] = useState('insured.demo@demo.com')
-  const [password, setPassword] = useState('Demo!2026')
+  const [password, setPassword] = useState('')
   const [position, setPosition] = useState<Position | null>(null)
   const [policyNumber, setPolicyNumber] = useState('POL-DEMO-001')
   const [vehiclePlate, setVehiclePlate] = useState('ABC-123')
@@ -66,7 +66,7 @@ export function App() {
     setLive(null); setClaim(await response.json()); setMessage('')
   }
 
-  if (!token) return <main className="mobile-shell"><Header /><section className="form-panel"><p className="overline">ACCESO DEL ASEGURADO</p><h1>Bienvenido</h1><label>Correo<input value={email} onChange={e => setEmail(e.target.value)} /></label><label>Contraseña<input type="password" value={password} onChange={e => setPassword(e.target.value)} /></label>{message && <p className="feedback">{message}</p>}<button className="primary-button" onClick={() => void login()}>Iniciar sesión</button><small>Demo: insured.demo@demo.com / Demo!2026</small></section></main>
+  if (!token) return <main className="mobile-shell"><Header /><section className="form-panel"><p className="overline">ACCESO DEL ASEGURADO</p><h1>Bienvenido</h1><label>Correo<input value={email} onChange={e => setEmail(e.target.value)} /></label><label>Contraseña<input type="password" value={password} onChange={e => setPassword(e.target.value)} /></label>{message && <p className="feedback">{message}</p>}<button className="primary-button" onClick={() => void login()}>Iniciar sesión</button><small>Usa las credenciales configuradas para tu demostración local.</small></section></main>
   if (claim) {
     const status = live?.status ?? claim.status
     const assigned = Boolean(live?.adjusterId ?? claim.assignedAdjusterId)

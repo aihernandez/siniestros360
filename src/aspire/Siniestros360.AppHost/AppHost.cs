@@ -1,4 +1,6 @@
 using Aspire.Hosting.ApplicationModel;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Siniestros360.Contracts.Common;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -7,6 +9,13 @@ var postgres = builder.AddPostgres("postgres")
     .WithImage("postgis/postgis", "16-3.4")
     .WithDataVolume("siniestros360-postgres-migrations");
 var jwtKey = builder.AddParameter("jwt-signing-key", secret: true);
+var demoEnabled = builder.Configuration.GetValue<bool>("Demo:Enabled");
+if (demoEnabled && !builder.Environment.IsDevelopment())
+{
+    throw new InvalidOperationException("Demo mode is allowed only in Development.");
+}
+
+var demoPassword = demoEnabled ? builder.AddParameter("demo-password", secret: true) : null;
 
 var identity = Service<Projects.Siniestros360_IdentityService>("identity-service", "identitydb", "siniestros360_identity");
 var claims = Service<Projects.Siniestros360_ClaimsService>("claims-service", "claimsdb", "siniestros360_claims");
@@ -17,6 +26,14 @@ var policy = Service<Projects.Siniestros360_PolicyService>("policy-service", "po
 var sla = Service<Projects.Siniestros360_SlaService>("sla-service", "sladb", "siniestros360_sla");
 var documents = Service<Projects.Siniestros360_DocumentsService>("documents-service", "documentsdb", "siniestros360_documents");
 var operations = Service<Projects.Siniestros360_OperationsService>("operations-service", "operationsdb", "siniestros360_operations");
+
+identity.WithEnvironment("Demo__Enabled", demoEnabled ? "true" : "false");
+adjusters.WithEnvironment("Demo__Enabled", demoEnabled ? "true" : "false");
+if (demoPassword is not null)
+{
+    identity.WithEnvironment("Demo__Password", demoPassword);
+    adjusters.WithEnvironment("Demo__Password", demoPassword);
+}
 
 // Namespace real de Azure Service Bus (tier Standard; Basic no admite topics). El emulador no sirve con MassTransit 8:
 // su API de administración usa otro puerto y MassTransit sólo acepta una cadena de conexión.
@@ -41,11 +58,16 @@ var gateway = builder.AddProject<Projects.Siniestros360_Gateway>("gateway")
     .WaitFor(identity).WaitFor(claims).WaitFor(operations);
 var gatewayUrl = gateway.GetEndpoint("http");
 
-builder.AddProject<Projects.Siniestros360_LocationSimulator>("location-simulator")
-    .WithEnvironment("Simulator__Forwarding__Enabled", "true")
+var simulator = builder.AddProject<Projects.Siniestros360_LocationSimulator>("location-simulator")
+    .WithEnvironment("Simulator__Forwarding__Enabled", demoEnabled ? "true" : "false")
     .WithEnvironment("Simulator__Forwarding__Endpoint", ReferenceExpression.Create($"{gatewayUrl}{ApiVersions.V1Path("locations/batch")}"))
     .WithEnvironment("Simulator__Forwarding__LoginEndpoint", ReferenceExpression.Create($"{gatewayUrl}{ApiVersions.V1Path("auth/login")}"))
     .WaitFor(gateway).WaitFor(adjusters).WaitFor(locations);
+
+if (demoPassword is not null)
+{
+    simulator.WithEnvironment("Simulator__Forwarding__Password", demoPassword);
+}
 
 // Las apps llaman rutas relativas y el proxy de Vite las reenvía al gateway, así el navegador no necesita CORS.
 // Puertos fijos: las pruebas de punta a punta (e2e/) y los marcadores del navegador no dependen de puertos aleatorios.

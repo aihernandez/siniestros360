@@ -5,6 +5,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-test:
     runs-on: ubuntu-latest
@@ -61,6 +64,10 @@ jobs:
           else
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           fi
+          if [ -z "$ConnectionStrings__servicebus" ]; then
+            echo '### Live-broker e2e: not executed' >> "$GITHUB_STEP_SUMMARY"
+            echo 'SERVICEBUS_CONNECTION_STRING is not configured. General CI success does not establish a live broker journey.' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - uses: actions/checkout@v4
         if: steps.secret.outputs.enabled == 'true'
       - uses: actions/setup-dotnet@v4
@@ -80,8 +87,16 @@ jobs:
         if: steps.secret.outputs.enabled == 'true'
         run: |
           dotnet build src/aspire/Siniestros360.AppHost -c Release
+          demo_password="Demo!1aA$(openssl rand -hex 24)"
+          jwt_key="$(openssl rand -hex 32)"
+          postgres_password="$(openssl rand -hex 16)"
+          echo "::add-mask::$demo_password"
+          echo "::add-mask::$jwt_key"
+          echo "::add-mask::$postgres_password"
+          echo "SINIESTROS360_DEMO_PASSWORD=$demo_password" >> "$GITHUB_ENV"
           # Llaves desechables del job: la base y los tokens viven sólo durante esta ejecución.
-          env "Parameters__jwt-signing-key=$(openssl rand -hex 32)" "Parameters__postgres-password=$(openssl rand -hex 16)" \
+          env "Parameters__jwt-signing-key=$jwt_key" "Parameters__postgres-password=$postgres_password" \
+            "Demo__Enabled=true" "Parameters__demo-password=$demo_password" \
             nohup dotnet run --project src/aspire/Siniestros360.AppHost -c Release --no-build --launch-profile http > apphost.log 2>&1 &
       - name: End-to-end tests
         if: steps.secret.outputs.enabled == 'true'
@@ -90,9 +105,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always() && steps.secret.outputs.enabled == 'true'
         with:
-          name: e2e-results
+          name: e2e-screenshots
           path: |
-            tests/e2e/playwright-report
-            tests/e2e/test-results
             tests/e2e/screenshots
-            apphost.log

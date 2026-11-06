@@ -3,7 +3,8 @@ import { mkdirSync } from 'node:fs'
 import type { Page } from '@playwright/test'
 import { urls } from '../playwright.config'
 
-export const password = 'Demo!2026'
+export const password = process.env.SINIESTROS360_DEMO_PASSWORD ?? ''
+if (!password) throw new Error('Set SINIESTROS360_DEMO_PASSWORD to the password configured for the explicit local demo.')
 export const users = { insured: 'insured.demo@demo.com', adjuster: 'adjuster.demo@demo.com', tower: 'tower.demo@demo.com' } as const
 // El usuario adjuster.demo es la unidad "Ajustador 01" del simulador.
 export const demoAdjusterId = '11111111-1111-1111-1111-111111111111'

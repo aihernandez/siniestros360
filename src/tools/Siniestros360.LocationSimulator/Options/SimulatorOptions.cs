@@ -22,6 +22,6 @@ public sealed class ForwardingOptions
     public string? ApiKey { get; init; }
     public string LoginEndpoint { get; init; } = $"http://localhost:5090{ApiVersions.V1Path("auth/login")}";
     public string Email { get; init; } = "admin.demo@demo.com";
-    public string Password { get; init; } = "Demo!2026";
+    public string Password { get; init; } = "";
     public int TimeoutSeconds { get; init; } = 5;
 }

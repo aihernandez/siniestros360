@@ -1,6 +1,6 @@
 import { devices, expect, test } from '@playwright/test'
 import { urls } from '../playwright.config'
-import { api, cancelOpenClaims, capture, login, tinyPng, users, waitForAvailableAdjuster } from './support'
+import { api, cancelOpenClaims, capture, login, password, tinyPng, users, waitForAvailableAdjuster } from './support'
 
 const phone = { ...devices['Pixel 7'], channel: process.env.PW_CHANNEL || undefined, locale: 'es-MX', timezoneId: 'America/Monterrey' }
 
@@ -25,6 +25,7 @@ test('asegurado, torre y ajustador atienden un siniestro en vivo', async ({ brow
 
   await test.step('torre: entra y ve a los 5 ajustadores en el mapa', async () => {
     await towerPage.goto(urls.tower)
+    await towerPage.getByLabel('Contraseña').fill(password)
     await towerPage.getByRole('button', { name: 'Entrar' }).click()
     await expect(towerPage.getByText('En vivo')).toBeVisible()
     await expect(towerPage.locator('.adjuster-row')).toHaveCount(5)
@@ -33,6 +34,7 @@ test('asegurado, torre y ajustador atienden un siniestro en vivo', async ({ brow
 
   await test.step('ajustador: entra a operación con el nombre de su unidad', async () => {
     await adjusterPage.goto(urls.adjuster)
+    await adjusterPage.getByLabel('Contraseña').fill(password)
     await adjusterPage.getByRole('button', { name: 'Entrar a operación' }).click()
     await expect(adjusterPage.locator('.topbar')).toContainText('Ajustador 01')
     await expect(adjusterPage.getByText('Estás disponible para recibir servicios.')).toBeVisible()
@@ -41,6 +43,7 @@ test('asegurado, torre y ajustador atienden un siniestro en vivo', async ({ brow
 
   const folio = await test.step('asegurado: reporta con ubicación y ambulancia y recibe folio', async () => {
     await insuredPage.goto(urls.insured)
+    await insuredPage.getByLabel('Contraseña').fill(password)
     await insuredPage.getByRole('button', { name: 'Iniciar sesión' }).click()
     await insuredPage.getByLabel('Tipo de siniestro').selectOption('Collision')
     await insuredPage.locator('.location-card button').click()

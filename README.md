@@ -111,7 +111,7 @@ dotnet run --project src/aspire/Siniestros360.AppHost
 
 Apaga el AppHost cuando no lo uses: el simulador GPS genera alrededor de 1.3 millones de operaciones por día en Service Bus.
 
-Usuarios demo, todos con contraseña `Demo!2026`:
+Usuarios demo, todos con contraseña `<configured-local-password>`:
 
 - `insured.demo@demo.com` (asegurado)
 - `adjuster.demo@demo.com` (Ajustador 01)
@@ -142,3 +142,9 @@ npm test --prefix tests/e2e
 ## Qué conceptos técnicos demuestra Siniestros360
 
 ASP.NET Core Minimal APIs; microservicios por bounded context y migración desde un monolito modular; YARP y service discovery con Aspire; MassTransit sobre Azure Service Bus con topics, una cola por servicio y DLQ; arquitectura orientada a eventos; bus outbox, consumer outbox e inbox transaccionales de EF Core; saga de asignación como máquina de estado de MassTransit, con compensación y concurrencia optimista; idempotencia HTTP por atributo `[Idempotent]` con transacción local y rollback; JWT y RBAC con validación de propiedad; PostgreSQL/PostGIS y migraciones EF Core por servicio; SignalR con grupos por rol; workers de SLA; timeout, retry, circuit breaker y fallback; OpenTelemetry, health checks y logs estructurados; ProblemDetails; CQRS ligero; máquina de estados; object storage; preparación para Key Vault, Blob Storage y Application Insights; pruebas unitarias e integración con PostgreSQL real (Testcontainers); CI básico.
+
+## Explicit local demo mode
+
+Demo accounts are disabled by default, restricted to Development and require a caller-provided password. The login forms no longer contain fixed passwords. Follow [the local demo guide](handbook/development.md) to configure the AppHost, simulator and tests. Previously persisted demo accounts require explicit cleanup before shared use.
+
+Original code is available under the [MIT License](LICENSE). See [security reporting](SECURITY.md).

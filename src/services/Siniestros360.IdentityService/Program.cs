@@ -31,6 +31,16 @@ app.UseSiniestrosApiDefaults();
 
 using (var scope = app.Services.CreateScope())
 {
+    var database = scope.ServiceProvider.GetRequiredService<IdentityData>();
+    if (!database.Database.IsRelational())
+    {
+        await database.Database.EnsureCreatedAsync();
+    }
+    else if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+    {
+        await database.Database.MigrateAsync();
+    }
+
     await IdentitySeed.InitializeAsync(scope.ServiceProvider);
 }
 
