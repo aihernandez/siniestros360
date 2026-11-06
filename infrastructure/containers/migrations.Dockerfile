@@ -7,6 +7,7 @@ ARG EF_VERSION=10.0.11
 WORKDIR /repo
 COPY Directory.Build.props Directory.Packages.props ./
 COPY src/ src/
+RUN dotnet restore "src/services/Siniestros360.${SERVICE}Service"
 RUN dotnet tool install dotnet-ef --tool-path /tools --version "$EF_VERSION"
 # Design-time placeholders let EF construct the host without embedding deployment credentials.
 RUN env "ConnectionStrings__${DB_KEY}=Host=localhost;Database=design;Username=design;Password=design" \
