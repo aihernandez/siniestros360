@@ -1,18 +1,18 @@
-# Pruebas de Siniestros360
+# Siniestros360 tests
 
-Ejecuta estos comandos desde la raíz del repositorio después de restaurar la solución con `dotnet restore Siniestros360.slnx`.
+Run from the repository root after restoring the solution. Select tests by the changed behavior; do not repeat the full suite for documentation-only changes.
 
-| Proyecto | Qué comprueba | Comando |
+| Project | Demonstrates | Command |
 |---|---|---|
-| `Siniestros360.Tests.Unit` | Dominio, casos de uso, reservas y saga sin infraestructura externa | `dotnet test tests/Siniestros360.Tests.Unit` |
-| `Siniestros360.Tests.Contracts` | Contratos de mensajes compartidos | `dotnet test tests/Siniestros360.Tests.Contracts` |
-| `Siniestros360.Tests.Architecture` | Límites y dependencias entre capas | `dotnet test tests/Siniestros360.Tests.Architecture` |
-| `Siniestros360.Tests.Integration` | APIs, gateway, PostgreSQL real con Testcontainers, outbox y saga | `dotnet test tests/Siniestros360.Tests.Integration` |
-| `Siniestros360.LocationSimulator.Tests` | API y generación de posiciones del simulador | `dotnet test tests/Siniestros360.LocationSimulator.Tests` |
+| Unit | Domain/use cases, reservations and saga | `dotnet test tests/Siniestros360.Tests.Unit` |
+| Contracts | Shared message compatibility | `dotnet test tests/Siniestros360.Tests.Contracts` |
+| Architecture | Namespace/layer dependency boundaries | `dotnet test tests/Siniestros360.Tests.Architecture` |
+| Integration | APIs/gateway, real PostgreSQL, transactions, outbox and saga | `dotnet test tests/Siniestros360.Tests.Integration` |
+| LocationSimulator | Simulator API and position generation | `dotnet test tests/Siniestros360.LocationSimulator.Tests` |
 
-Las pruebas de integración requieren Docker Desktop. `ApiVersioningTests` en Integración y Simulador comprueban el contrato público `/api/v1`; `EndpointRegistrationTests` comprueba el descubrimiento de endpoints.
+Integration requires Docker Desktop. ApiVersioningTests cover /api/v1 in Integration and Simulator; EndpointRegistrationTests cover endpoint discovery. The CQRS migration architecture checks currently identify Claims only.
 
-`tests/e2e` ejecuta Playwright contra el AppHost completo, el gateway, las tres apps y Azure Service Bus. Necesita el AppHost iniciado, un namespace de Service Bus configurado y un navegador disponible:
+Playwright requires running AppHost, configured Service Bus and an available browser:
 
 ```powershell
 npm ci --prefix tests/e2e
@@ -20,4 +20,4 @@ $env:PW_CHANNEL = "chrome"
 npm test --prefix tests/e2e
 ```
 
-La CI compila la solución en Release, ejecuta los cinco proyectos .NET, verifica `dotnet format` y construye las tres apps. El recorrido e2e usa el secreto `SERVICEBUS_CONNECTION_STRING` cuando está configurado.
+CI builds Release, runs five .NET test projects, checks formatting and builds three apps. The e2e job uses SERVICEBUS_CONNECTION_STRING when configured. [Coverage and historical evidence](../handbook/validation.md) are separate from current run results.
